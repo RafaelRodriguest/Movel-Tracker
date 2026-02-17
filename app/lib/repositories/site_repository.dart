@@ -1,15 +1,18 @@
 import '../models/site.dart';
+import '../services/data_service.dart';
 
-/// Repositório de Sites (Mock para testes)
-/// Futuramente pode ser substituído por carregamento via Google Sheets/CSV
+/// Repositório de Sites
+/// Pode carregar dados do Google Sheets ou usar dados mock local
 class SiteRepository {
   final List<Site> _sites = [];
+  final DataService _dataService = DataService();
 
   SiteRepository() {
+    // Dados mock são carregados apenas como fallback
     _loadMockData();
   }
 
-  /// Carrega dados mock para testes
+  /// Carrega dados mock para testes (usado como fallback)
   void _loadMockData() {
     _sites.addAll([
       Site(
@@ -23,7 +26,7 @@ class SiteRepository {
         detentora: 'ATC',
         uc: '12345678',
         tecnologias: ['4G', '5G', 'IOT'],
-        ativo: true,
+        status: 'Ativo',
       ),
       Site(
         siteId: 'ITZ045',
@@ -36,7 +39,7 @@ class SiteRepository {
         detentora: 'ATC',
         uc: '87654321',
         tecnologias: ['4G'],
-        ativo: true,
+        status: 'Ativo',
       ),
       Site(
         siteId: 'CXS012',
@@ -49,7 +52,7 @@ class SiteRepository {
         detentora: 'ATC',
         uc: '54321678',
         tecnologias: ['4G', '5G'],
-        ativo: false,
+        status: 'Desativado',
       ),
       Site(
         siteId: 'SLZ003',
@@ -62,7 +65,7 @@ class SiteRepository {
         detentora: 'AMX',
         uc: '98765432',
         tecnologias: ['4G', '5G'],
-        ativo: true,
+        status: 'Ativo',
       ),
       Site(
         siteId: 'SJO015',
@@ -75,9 +78,31 @@ class SiteRepository {
         detentora: 'ATC',
         uc: '13579246',
         tecnologias: ['4G'],
-        ativo: true,
+        status: 'Ativo',
       ),
     ]);
+  }
+
+  /// Carrega sites do Google Sheets
+  /// Retorna a lista de sites carregados ou null se falhar
+  Future<List<Site>?> loadFromGoogleSheets({String? planilhaId}) async {
+    try {
+      final sites = await _dataService.fetchSites();
+      if (sites.isNotEmpty) {
+        _sites.clear();
+        _sites.addAll(sites);
+        return sites;
+      }
+      return null;
+    } catch (e) {
+      // Em caso de erro, retorna null (mantém os dados mock)
+      return null;
+    }
+  }
+
+  /// Verifica se a URL do Google Sheets está configurada
+  bool isGoogleSheetsConfigured() {
+    return _dataService.isUrlConfigured();
   }
 
   /// Retorna todos os sites

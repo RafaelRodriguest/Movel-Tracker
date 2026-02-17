@@ -36,10 +36,22 @@ class SiteProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    // Simula um delay para parecer que está carregando
-    await Future.delayed(const Duration(milliseconds: 500));
+    try {
+      // Tenta carregar do Google Sheets primeiro
+      final sheetsSites = await _repository.loadFromGoogleSheets();
 
-    _allSites = _repository.getAllSites();
+      if (sheetsSites != null && sheetsSites.isNotEmpty) {
+        // Dados carregados do Google Sheets
+        _allSites = sheetsSites;
+      } else {
+        // Fallback para dados mock locais
+        _allSites = _repository.getAllSites();
+      }
+    } catch (e) {
+      // Em caso de erro, usa dados mock
+      _allSites = _repository.getAllSites();
+    }
+
     _filteredSites = List.from(_allSites);
     _isLoading = false;
     notifyListeners();

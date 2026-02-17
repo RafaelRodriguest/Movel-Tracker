@@ -39,7 +39,7 @@ class ClaroSitesApp extends StatelessWidget {
             foregroundColor: AppColors.textLight,
             iconTheme: IconThemeData(color: AppColors.textLight),
           ),
-          cardTheme: CardTheme(
+          cardTheme: CardThemeData(
             color: Colors.white,
             elevation: 1,
             shape: RoundedRectangleBorder(
@@ -66,10 +66,6 @@ class ClaroSitesApp extends StatelessWidget {
             labelStyle: const TextStyle(
               color: AppColors.chipTextInactive,
               fontWeight: FontWeight.w500,
-            ),
-            selectedLabelStyle: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
             ),
             side: const BorderSide(color: AppColors.chipBorder),
             shape: RoundedRectangleBorder(

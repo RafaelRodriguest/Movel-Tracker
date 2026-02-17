@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:material_symbols/material_symbols.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/site.dart';
 import '../providers/site_provider.dart';
 import '../theme/app_colors.dart';
@@ -347,15 +347,23 @@ class _SiteCard extends StatelessWidget {
                     ),
                   ),
                   // Botão de mapa rápido
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.backgroundLight,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.map_outlined,
-                      color: AppColors.primary,
+                  GestureDetector(
+                    onTap: () {
+                      final uri = Uri.parse(
+                        'https://www.google.com/maps/dir/?api=1&destination=${site.latitude},${site.longitude}',
+                      );
+                      launchUrl(uri, mode: LaunchMode.externalApplication);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.backgroundLight,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.map_outlined,
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
                 ],

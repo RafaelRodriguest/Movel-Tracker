@@ -10,7 +10,7 @@ class Site {
   final String detentora;
   final String uc;
   final List<String> tecnologias;
-  final bool ativo;
+  final String status;
 
   Site({
     required this.siteId,
@@ -23,7 +23,7 @@ class Site {
     required this.detentora,
     required this.uc,
     required this.tecnologias,
-    this.ativo = true,
+    this.status = 'Ativo',
   });
 
   /// Cria um Site a partir de um mapa (JSON/CSV)
@@ -39,6 +39,7 @@ class Site {
       detentora: json['detentora'] ?? '',
       uc: json['uc']?.toString() ?? '',
       tecnologias: _parseTecnologias(json['tecnologias']?.toString()),
+      status: json['status']?.toString() ?? 'Ativo',
     );
   }
 
@@ -55,8 +56,12 @@ class Site {
       'detentora': detentora,
       'uc': uc,
       'tecnologias': tecnologias.join(','),
+      'status': status,
     };
   }
+
+  /// Retorna true se o site estiver ativo (para compatibilidade)
+  bool get ativo => status.toLowerCase() == 'ativo';
 
   /// Parser de tecnologias (pode vir como string separada por vírgula)
   static List<String> _parseTecnologias(String? tecnologias) {
@@ -78,9 +83,9 @@ class Site {
   /// Formata coordenadas para exibição
   String get coordenadasFormatadas => '$latitude, $longitude';
 
-  /// Gera URL de navegação para Google Maps
+  /// Gera URL de navegação para Google Maps (usando esquema geo universal)
   String get googleMapsNavigationUrl =>
-      'google.navigation:q=$latitude,$longitude';
+      'https://www.google.com/maps/dir/?api=1&destination=$latitude,$longitude&navigate=yes';
 
   /// Gera URL de visualização do mapa
   String get googleMapsViewUrl =>

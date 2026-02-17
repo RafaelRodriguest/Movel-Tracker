@@ -13,15 +13,40 @@ class SiteDetailScreen extends StatelessWidget {
 
   Future<void> _launchGoogleMaps() async {
     final uri = Uri.parse(site.googleMapsNavigationUrl);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    try {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) {
+        // Fallback para esquema geo se a URL web falhar
+        await launchUrl(
+          Uri.parse('geo:${site.latitude},${site.longitude}?q=${site.latitude},${site.longitude}'),
+          mode: LaunchMode.externalApplication,
+        );
+      }
+    } catch (e) {
+      // Tenta geo como fallback final
+      await launchUrl(
+        Uri.parse('geo:${site.latitude},${site.longitude}'),
+        mode: LaunchMode.externalApplication,
+      );
     }
   }
 
   Future<void> _launchGoogleMapsView() async {
     final uri = Uri.parse(site.googleMapsViewUrl);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    try {
+      await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (e) {
+      // Fallback para geo
+      await launchUrl(
+        Uri.parse('geo:${site.latitude},${site.longitude}?q=${site.latitude},${site.longitude}'),
+        mode: LaunchMode.externalApplication,
+      );
     }
   }
 
@@ -36,11 +61,10 @@ class SiteDetailScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.9),
-                border: const Border(
+                border: Border(
                   bottom: BorderSide(
-                    color: AppColors.primary,
+                    color: AppColors.primary.withOpacity(0.1),
                     width: 1,
-                    opacity: 0.1,
                   ),
                 ),
               ),
