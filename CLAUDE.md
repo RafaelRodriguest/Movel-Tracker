@@ -1,6 +1,12 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # Contexto do Projeto: Localizador de Sites Claro (Maranhão)
 
 Aplicativo Android focado em produtividade para técnicos de campo da Claro no Maranhão. O objetivo é buscar informações técnicas de sites (torres) e facilitar a navegação GPS.
+
+**Working directory:** Todos os comandos Flutter devem ser executados a partir do subdiretório `app/`.
 
 ## 🛠 Tecnologias e Arquitetura
 
@@ -60,12 +66,19 @@ class Site {
   final String nome;           // Ex: São Luís Centro
   final String endereco;       // Endereço completo
   final String municipio;      // Ex: São Luís
-  final double latitude;       // Coordenada latitude
-  final double longitude;      // Coordenada longitude
+  final String tecnico;        // Técnico responsável
+  final double latitude;       // Coordenada latitude (aceita vírgula)
+  final double longitude;      // Coordenada longitude (aceita vírgula)
   final String detentora;     // Ex: ATC
   final String uc;            // UC do site
   final List<String> tecnologias; // ['4G', '5G']
   final String status;         // 'Ativo' ou 'Desativado'
+
+  // Métodos úteis:
+  bool get ativo;                        // Verifica se status == 'ativo'
+  bool hasTecnologia(String tecnologia); // Verifica se possui tecnologia específica
+  String get googleMapsNavigationUrl;    // URL de navegação
+  String get googleMapsViewUrl;          // URL de visualização do mapa
 }
 ```
 
@@ -78,8 +91,9 @@ class Site {
 | `nome` | Nome descritivo do site | `São Luís Centro` |
 | `endereco` | Endereço completo | `Av. Dom Pedro II, Centro` |
 | `municipio` | Município/UF | `São Luís, MA` |
-| `latitude` | Coordenada latitude | `-2.529` |
-| `longitude` | Coordenada longitude | `-44.302` |
+| `tecnico` | Técnico responsável | `João Silva` |
+| `latitude` | Coordenada latitude (vírgula ou ponto) | `-2,529` |
+| `longitude` | Coordenada longitude (vírgula ou ponto) | `-44,302` |
 | `detentora` | Proprietário da torre | `ATC` |
 | `uc` | UC do site | `12345678` |
 | `tecnologias` | Tecnologias disponíveis | `4G,5G` |
@@ -95,8 +109,10 @@ class Site {
 4. Inserir o ID em `lib/services/data_service.dart`:
    ```dart
    static const String _csvUrl =
-       'https://docs.google.com/spreadsheets/d/SEU_ID_AQUI/export?format=csv';
+       'https://docs.google.com/spreadsheets/d/SEU_ID_AQUI/export?format=csv&gid=GID_AQUI';
    ```
+
+**Nota:** A URL atual já está configurada com um ID de planilha real. Para trocar, edite `_csvUrl` em `data_service.dart` ou use `DataService.getCsvUrl(planilhaId: 'NOVO_ID')`.
 
 ### Fluxo de Carregamento
 
@@ -104,6 +120,7 @@ class Site {
 2. **Fallback:** Se falhar, usa dados mock locais
 3. **Cache:** Dados são mantidos em memória para busca rápida
 4. **Pesquisa:** Busca local (Site ID, Sigla, Nome, Município)
+5. **Refresh:** Use `SiteProvider.refresh()` para recarregar dados da planilha
 
 ### URL de Navegação Google Maps
 
@@ -114,10 +131,20 @@ https://www.google.com/maps/dir/?api=1&destination={latitude},{longitude}&naviga
 
 ## 🚀 Comandos de Desenvolvimento
 
+**Nota:** Executar sempre no diretório `app/` (ou usar `cd app` primeiro)
+
 - `flutter pub get` - Instalar dependências.
 - `flutter run` - Iniciar o app no emulador/dispositivo.
 - `flutter build apk --debug` - Gerar APK de teste (mais rápido).
 - `flutter build apk --release` - Gerar APK de produção.
+- `flutter analyze` - Analisar código para problemas.
+
+## 📂 Estrutura de Pastas
+
+- **`app/lib/`** - Código principal do Flutter (usar este diretório)
+- **`app/android/lib/`** - Duplicação do lib principal (ignorar, legado)
+
+O diretório `android/lib/` é uma cópia redundante de `app/lib/` que deve ser ignorada. Sempre trabalhe em `app/lib/`.
 
 ## 📝 Histórico de Commits
 

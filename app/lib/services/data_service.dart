@@ -8,7 +8,7 @@ class DataService {
   /// Substitua {PLANILHA_ID} pelo ID real da sua planilha
   /// Exemplo: 'https://docs.google.com/spreadsheets/d/1A2B3C4D5E6F7G8H9I0J/export?format=csv'
   static const String _csvUrl =
-      'https://docs.google.com/spreadsheets/d/SEU_ID_AQUI/export?format=csv';
+      'https://docs.google.com/spreadsheets/d/1nyRakcId5Zg4zal-eJps0aX-WIaMnPIN4wBuaif0UAc/export?format=csv&gid=1019904228';
 
   /// Busca os sites do Google Sheets e retorna uma lista de Site
   Future<List<Site>> fetchSites() async {
@@ -85,6 +85,7 @@ class DataService {
       'nome',
       'endereco',
       'municipio',
+      'tecnico',
       'latitude',
       'longitude',
       'detentora',

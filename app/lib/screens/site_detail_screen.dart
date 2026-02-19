@@ -313,6 +313,15 @@ class SiteDetailScreen extends StatelessWidget {
         ),
         const SizedBox(height: 12),
 
+        // Técnico
+        _buildInfoCard(
+          icon: Icons.person_outline,
+          label: 'Técnico',
+          value: site.tecnico,
+          onTap: () {},
+        ),
+        const SizedBox(height: 12),
+
         // Coordenadas e Proprietário (grid)
         Row(
           children: [

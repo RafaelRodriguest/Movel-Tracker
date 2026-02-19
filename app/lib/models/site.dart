@@ -5,6 +5,7 @@ class Site {
   final String nome;
   final String endereco;
   final String municipio;
+  final String tecnico;
   final double latitude;
   final double longitude;
   final String detentora;
@@ -18,6 +19,7 @@ class Site {
     required this.nome,
     required this.endereco,
     required this.municipio,
+    required this.tecnico,
     required this.latitude,
     required this.longitude,
     required this.detentora,
@@ -28,18 +30,23 @@ class Site {
 
   /// Cria um Site a partir de um mapa (JSON/CSV)
   factory Site.fromJson(Map<String, dynamic> json) {
+    final statusValue = json['status']?.toString();
+    // Se status for null ou vazio, assume 'Ativo' como padrão
+    final finalStatus = (statusValue == null || statusValue.isEmpty) ? 'Ativo' : statusValue;
+
     return Site(
       siteId: json['site_id'] ?? '',
       sigla: json['sigla'] ?? '',
       nome: json['nome'] ?? '',
       endereco: json['endereco'] ?? '',
       municipio: json['municipio'] ?? '',
-      latitude: double.tryParse(json['latitude'].toString()) ?? 0.0,
-      longitude: double.tryParse(json['longitude'].toString()) ?? 0.0,
+      tecnico: json['tecnico'] ?? '',
+      latitude: _parseCoordinate(json['latitude']?.toString()),
+      longitude: _parseCoordinate(json['longitude']?.toString()),
       detentora: json['detentora'] ?? '',
       uc: json['uc']?.toString() ?? '',
       tecnologias: _parseTecnologias(json['tecnologias']?.toString()),
-      status: json['status']?.toString() ?? 'Ativo',
+      status: finalStatus,
     );
   }
 
@@ -51,6 +58,7 @@ class Site {
       'nome': nome,
       'endereco': endereco,
       'municipio': municipio,
+      'tecnico': tecnico,
       'latitude': latitude,
       'longitude': longitude,
       'detentora': detentora,
@@ -61,7 +69,10 @@ class Site {
   }
 
   /// Retorna true se o site estiver ativo (para compatibilidade)
-  bool get ativo => status.toLowerCase() == 'ativo';
+  bool get ativo {
+    final s = status.trim().toLowerCase();
+    return s.isEmpty || s == 'ativo' || s == 'active' || s == 'enabled';
+  }
 
   /// Parser de tecnologias (pode vir como string separada por vírgula)
   static List<String> _parseTecnologias(String? tecnologias) {
@@ -73,6 +84,16 @@ class Site {
         .map((t) => t.trim().toUpperCase())
         .where((t) => t.isNotEmpty)
         .toList();
+  }
+
+  /// Parser de coordenadas que aceita vírgula ou ponto como separador decimal
+  static double _parseCoordinate(String? value) {
+    if (value == null || value.isEmpty) {
+      return 0.0;
+    }
+    // Substitui vírgula por ponto para parsing correto (formato brasileiro)
+    final normalized = value.replaceAll(',', '.');
+    return double.tryParse(normalized) ?? 0.0;
   }
 
   /// Verifica se possui determinada tecnologia

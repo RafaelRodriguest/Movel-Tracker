@@ -343,6 +343,26 @@ class _SiteCard extends StatelessWidget {
                             ),
                           ],
                         ),
+                        const SizedBox(height: 2),
+
+                        // Técnico
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.person_outline,
+                              size: 14,
+                              color: AppColors.textSecondary.withOpacity(0.7),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              site.tecnico,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textSecondary.withOpacity(0.7),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
