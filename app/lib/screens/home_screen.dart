@@ -59,19 +59,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(width: 12),
                 const Expanded(
                   child: Text(
-                    'Localizador de Sites',
+                    'Movel Tracker',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
-                  ),
-                ),
-                Text(
-                  '- MA',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
                   ),
                 ),
               ],
