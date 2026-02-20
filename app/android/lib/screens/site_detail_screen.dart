@@ -5,7 +5,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models/site.dart';
 import '../theme/app_colors.dart';
 
-/// Tela de detalhes de um Site específico
 class SiteDetailScreen extends StatelessWidget {
   final Site site;
 
@@ -13,40 +12,15 @@ class SiteDetailScreen extends StatelessWidget {
 
   Future<void> _launchGoogleMaps() async {
     final uri = Uri.parse(site.googleMapsNavigationUrl);
-    try {
-      final launched = await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
-      );
-      if (!launched) {
-        // Fallback para esquema geo se a URL web falhar
-        await launchUrl(
-          Uri.parse('geo:${site.latitude},${site.longitude}?q=${site.latitude},${site.longitude}'),
-          mode: LaunchMode.externalApplication,
-        );
-      }
-    } catch (e) {
-      // Tenta geo como fallback final
-      await launchUrl(
-        Uri.parse('geo:${site.latitude},${site.longitude}'),
-        mode: LaunchMode.externalApplication,
-      );
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 
   Future<void> _launchGoogleMapsView() async {
     final uri = Uri.parse(site.googleMapsViewUrl);
-    try {
-      await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
-      );
-    } catch (e) {
-      // Fallback para geo
-      await launchUrl(
-        Uri.parse('geo:${site.latitude},${site.longitude}?q=${site.latitude},${site.longitude}'),
-        mode: LaunchMode.externalApplication,
-      );
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 
@@ -55,7 +29,6 @@ class SiteDetailScreen extends StatelessWidget {
     return Scaffold(
       body: Column(
         children: [
-          // Top App Bar
           SafeArea(
             child: Container(
               padding: const EdgeInsets.all(16),
@@ -98,22 +71,16 @@ class SiteDetailScreen extends StatelessWidget {
               ),
             ),
           ),
-
-          // Conteúdo scrollável
           Expanded(
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  // Mapa
                   _buildMapSection(context),
-
-                  // Informações do site
                   Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Título e Status
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -127,26 +94,6 @@ class SiteDetailScreen extends StatelessWidget {
                                       fontSize: 24,
                                       fontWeight: FontWeight.bold,
                                     ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  // Município
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.location_on_outlined,
-                                        size: 16,
-                                        color: AppColors.textSecondary,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        site.municipio,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: AppColors.textSecondary,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
                                   ),
                                   const SizedBox(height: 4),
                                   Row(
@@ -201,17 +148,9 @@ class SiteDetailScreen extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 24),
-
-                        // Cards de informações
                         _buildInfoCards(context),
                         const SizedBox(height: 24),
-
-                        // Tecnologias
                         _buildTechnologiesCard(context),
-                        const SizedBox(height: 24),
-
-                        // Seção de fotos (placeholder)
-                        _buildPhotosSection(context),
                       ],
                     ),
                   ),
@@ -219,8 +158,6 @@ class SiteDetailScreen extends StatelessWidget {
               ),
             ),
           ),
-
-          // Botão de ação fixo
           SafeArea(
             child: Container(
               padding: const EdgeInsets.all(16),
@@ -294,7 +231,6 @@ class SiteDetailScreen extends StatelessWidget {
               ),
             ],
           ),
-          // Botão de minha localização
           Positioned(
             right: 12,
             bottom: 12,
@@ -324,7 +260,6 @@ class SiteDetailScreen extends StatelessWidget {
   Widget _buildInfoCards(BuildContext context) {
     return Column(
       children: [
-        // Endereço
         _buildInfoCard(
           icon: Icons.map_outlined,
           label: 'Endereço',
@@ -332,17 +267,6 @@ class SiteDetailScreen extends StatelessWidget {
           onTap: () {},
         ),
         const SizedBox(height: 12),
-
-        // Técnico
-        _buildInfoCard(
-          icon: Icons.person_outline,
-          label: 'Técnico',
-          value: site.tecnico,
-          onTap: () {},
-        ),
-        const SizedBox(height: 12),
-
-        // Coordenadas e Proprietário (grid)
         Row(
           children: [
             Expanded(
@@ -365,8 +289,6 @@ class SiteDetailScreen extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-
-        // Sigla e UC (grid)
         Row(
           children: [
             Expanded(
@@ -512,65 +434,6 @@ class SiteDetailScreen extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildPhotosSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Fotos do Local',
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textSecondary,
-            letterSpacing: 0.3,
-          ),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 96,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: List.generate(
-              3,
-              (index) => Container(
-                width: 96,
-                height: 96,
-                margin: const EdgeInsets.only(right: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.backgroundLight,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: AppColors.primary.withOpacity(0.1),
-                  ),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.photo_camera_outlined,
-                        size: 32,
-                        color: AppColors.textSecondary.withOpacity(0.5),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Foto ${index + 1}',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: AppColors.textSecondary.withOpacity(0.7),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

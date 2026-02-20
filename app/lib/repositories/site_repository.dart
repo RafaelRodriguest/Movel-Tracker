@@ -120,25 +120,52 @@ class SiteRepository {
     return municipios;
   }
 
-  /// Busca sites por termo (pesquisa inteligente)
-  /// Busca em: Site ID, Nome, Município
+  /// Busca sites por termo (pesquisa inteligente com normalização de acentos)
+  /// Busca em: Site ID, Nome, Município, Técnico
   List<Site> searchSites(String query) {
     if (query.isEmpty) return getAllSites();
 
-    final lowerQuery = query.toLowerCase();
+    final normalizedQuery = _normalizeText(query);
 
     return _sites.where((site) {
-      return site.siteId.toLowerCase().contains(lowerQuery) ||
-             site.sigla.toLowerCase().contains(lowerQuery) ||
-             site.nome.toLowerCase().contains(lowerQuery) ||
-             site.municipio.toLowerCase().contains(lowerQuery);
+      return _normalizeText(site.siteId).contains(normalizedQuery) ||
+             _normalizeText(site.sigla).contains(normalizedQuery) ||
+             _normalizeText(site.nome).contains(normalizedQuery) ||
+             _normalizeText(site.municipio).contains(normalizedQuery) ||
+             _normalizeText(site.tecnico).contains(normalizedQuery);
     }).toList();
+  }
+
+  /// Normaliza o texto removendo acentos e cedilha para busca
+  String _normalizeText(String text) {
+    final accents = {
+      'Á': 'A', 'À': 'A', 'Â': 'A', 'Ã': 'A', 'Ä': 'A', 'Å': 'A',
+      'É': 'E', 'È': 'E', 'Ê': 'E', 'Ë': 'E',
+      'Í': 'I', 'Ì': 'I', 'Î': 'I', 'Ï': 'I',
+      'Ó': 'O', 'Ò': 'O', 'Ô': 'O', 'Õ': 'O', 'Ö': 'O', 'Ø': 'O',
+      'Ú': 'U', 'Ù': 'U', 'Û': 'U', 'Ü': 'U',
+      'Ç': 'C',
+      'á': 'a', 'à': 'a', 'â': 'a', 'ã': 'a', 'ä': 'a', 'å': 'a',
+      'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
+      'í': 'i', 'ì': 'i', 'î': 'i', 'ï': 'i',
+      'ó': 'o', 'ò': 'o', 'ô': 'o', 'õ': 'o', 'ö': 'o', 'ø': 'o',
+      'ú': 'u', 'ù': 'u', 'û': 'u', 'ü': 'u',
+      'ç': 'c',
+      'Ñ': 'N', 'ñ': 'n',
+      'Ý': 'Y', 'ý': 'y', 'ÿ': 'y',
+    };
+
+    String result = text;
+    accents.forEach((accent, normal) {
+      result = result.replaceAll(accent, normal);
+    });
+    return result.toLowerCase().trim();
   }
 
   /// Filtra sites por município
   List<Site> filterByMunicipio(String municipio) {
-    if (municipio.isEmpty) return getAllSites();
-    return _sites.where((s) => s.municipio == municipio).toList();
+    if (municipio.isEmpty || municipio == 'Todos') return getAllSites();
+    return _sites.where((s) => _normalizeText(s.municipio) == _normalizeText(municipio)).toList();
   }
 
   /// Busca site por ID

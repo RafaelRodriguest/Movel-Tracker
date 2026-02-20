@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Círculo fundo -->
+    <path
+        android:fillColor="#EE1105"
+        android:pathData="M54,0 C24.2,0 0,24.2 0,54 C0,83.8 24.2,108 54,108 C83.8,108 108,83.8 108,54 C108,24.2 83.8,0 54,0 Z"/>
+    <!-- Caminho da rota -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M19,85 Q35,65 30,50 Q25,35 40,30 Q55,25 54,10 Q53,25 68,30 Q83,35 78,50 Q73,65 89,85"/>
+    <!-- Pontos de parada (como paths) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M25,85 A6,6 0 1,1 13,85 A6,6 0 1,1 25,85 Z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M36,50 A6,6 0 1,1 24,50 A6,6 0 1,1 36,50 Z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M46,30 A6,6 0 1,1 34,30 A6,6 0 1,1 46,30 Z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M74,30 A6,6 0 1,1 62,30 A6,6 0 1,1 74,30 Z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M84,50 A6,6 0 1,1 72,50 A6,6 0 1,1 84,50 Z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M95,85 A6,6 0 1,1 83,85 A6,6 0 1,1 95,85 Z"/>
+    <!-- Pin de localização - círculo branco externo -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M72,42 A18,18 0 1,1 36,42 A18,18 0 1,1 72,42 Z"/>
+    <!-- Pin de localização - círculo vermelho interno -->
+    <path
+        android:fillColor="#EE1105"
+        android:pathData="M66,42 A12,12 0 1,1 42,42 A12,12 0 1,1 66,42 Z"/>
+</vector>

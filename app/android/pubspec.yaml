@@ -1,5 +1,5 @@
-name: movel_tracker
-description: Movel Tracker - Aplicativo de rastreamento e navegação para técnicos de campo.
+name: claro_sites_ma
+description: Localizador de Sites Claro (Maranhão) - Aplicativo para técnicos de campo.
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -14,21 +14,11 @@ dependencies:
   url_launcher: ^6.3.0
   flutter_map: ^8.0.0
   latlong2: ^0.9.1
-  http: ^1.2.2
-  csv: ^6.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.1
-  mockito: ^5.4.4
-  build_runner: ^2.4.11
-  http_mock_adapter: ^0.6.1
-  flutter_launcher_icons: ^0.13.1
-
-flutter_launcher_icons:
-  android: "ic_launcher"
-  image_path: "assets/icon/app_icon.png"
 
 flutter:
   uses-material-design: true

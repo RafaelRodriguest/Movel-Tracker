@@ -79,6 +79,33 @@ class SiteProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// Normaliza o texto removendo acentos e cedilha para busca
+  String _normalizeText(String text) {
+    // Mapeamento de caracteres acentuados para equivalentes sem acento
+    final accents = {
+      'Á': 'A', 'À': 'A', 'Â': 'A', 'Ã': 'A', 'Ä': 'A', 'Å': 'A',
+      'É': 'E', 'È': 'E', 'Ê': 'E', 'Ë': 'E',
+      'Í': 'I', 'Ì': 'I', 'Î': 'I', 'Ï': 'I',
+      'Ó': 'O', 'Ò': 'O', 'Ô': 'O', 'Õ': 'O', 'Ö': 'O', 'Ø': 'O',
+      'Ú': 'U', 'Ù': 'U', 'Û': 'U', 'Ü': 'U',
+      'Ç': 'C',
+      'á': 'a', 'à': 'a', 'â': 'a', 'ã': 'a', 'ä': 'a', 'å': 'a',
+      'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
+      'í': 'i', 'ì': 'i', 'î': 'i', 'ï': 'i',
+      'ó': 'o', 'ò': 'o', 'ô': 'o', 'õ': 'o', 'ö': 'o', 'ø': 'o',
+      'ú': 'u', 'ù': 'u', 'û': 'u', 'ü': 'u',
+      'ç': 'c',
+      'Ñ': 'N', 'ñ': 'n',
+      'Ý': 'Y', 'ý': 'y', 'ÿ': 'y',
+    };
+
+    String result = text;
+    accents.forEach((accent, normal) {
+      result = result.replaceAll(accent, normal);
+    });
+    return result.toLowerCase().trim();
+  }
+
   /// Aplica filtros de busca e município
   void _applyFilters() {
     List<Site> result = _allSites;
@@ -88,14 +115,15 @@ class SiteProvider with ChangeNotifier {
       result = _repository.filterByMunicipio(_selectedMunicipio);
     }
 
-    // Filtro por busca de texto
+    // Filtro por busca de texto (case-insensitive e acent-insensitive)
     if (_searchQuery.isNotEmpty) {
+      final normalizedQuery = _normalizeText(_searchQuery);
       result = result.where((site) {
-        final lowerQuery = _searchQuery.toLowerCase();
-        return site.siteId.toLowerCase().contains(lowerQuery) ||
-               site.sigla.toLowerCase().contains(lowerQuery) ||
-               site.nome.toLowerCase().contains(lowerQuery) ||
-               site.municipio.toLowerCase().contains(lowerQuery);
+        return _normalizeText(site.siteId).contains(normalizedQuery) ||
+               _normalizeText(site.sigla).contains(normalizedQuery) ||
+               _normalizeText(site.nome).contains(normalizedQuery) ||
+               _normalizeText(site.municipio).contains(normalizedQuery) ||
+               _normalizeText(site.tecnico).contains(normalizedQuery);
       }).toList();
     }
 

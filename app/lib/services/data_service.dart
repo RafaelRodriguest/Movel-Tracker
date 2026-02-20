@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'package:csv/csv.dart';
+import 'dart:convert';
 import '../models/site.dart';
 
 /// Serviço para buscar dados dos sites do Google Sheets (CSV)
@@ -13,10 +14,21 @@ class DataService {
   /// Busca os sites do Google Sheets e retorna uma lista de Site
   Future<List<Site>> fetchSites() async {
     try {
-      final response = await http.get(Uri.parse(_csvUrl));
+      final response = await http.get(
+        Uri.parse(_csvUrl),
+        headers: {'Accept-Charset': 'UTF-8'},
+      );
 
       if (response.statusCode == 200) {
-        return _parseCsv(response.body);
+        // Decodificar explicitamente como UTF-8
+        String body;
+        try {
+          body = utf8.decode(response.bodyBytes);
+        } catch (e) {
+          // Fallback para o body original se a decodificação falhar
+          body = response.body;
+        }
+        return _parseCsv(body);
       } else {
         throw Exception(
           'Erro ao buscar dados: Status ${response.statusCode}',
@@ -29,23 +41,27 @@ class DataService {
 
   /// Faz parse do CSV e converte para lista de Site
   List<Site> _parseCsv(String csvData) {
-    // Remove BOM (Byte Order Mark) se presente
-    final data = csvData.startsWith('\uFEFF')
-        ? csvData.substring(1)
-        : csvData;
+    // Remove BOM (Byte Order Mark) se presente - UTF-8 BOM
+    if (csvData.startsWith('\uFEFF')) {
+      csvData = csvData.substring(1);
+    }
+
+    // Remove carriage returns extra (Windows line endings)
+    csvData = csvData.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
 
     // Converte CSV para lista de listas
     final List<List<dynamic>> rows = const CsvToListConverter(
       eol: '\n',
       shouldParseNumbers: false,
-    ).convert(data);
+      allowInvalid: false,
+    ).convert(csvData);
 
     if (rows.isEmpty) {
       return [];
     }
 
     // Primeira linha contém os cabeçalhos
-    final headers = rows.first.map((h) => h.toString().toLowerCase()).toList();
+    final headers = rows.first.map((h) => h.toString().trim().toLowerCase()).toList();
 
     // Mapeia índice das colunas
     final Map<String, int> columnIndex = {};
@@ -97,7 +113,9 @@ class DataService {
     for (final col in columns) {
       final index = columnIndex[col];
       if (index != null && index < row.length) {
-        map[col] = row[index]?.toString() ?? '';
+        // Remove espaços extras e converte para string
+        var value = row[index]?.toString() ?? '';
+        map[col] = value.trim();
       } else {
         map[col] = '';
       }
