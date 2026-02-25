@@ -20,6 +20,11 @@ Aplicativo Android "Movel Tracker" focado em produtividade para técnicos de cam
   - `latlong2: ^0.9.1` - Coordenadas geográficas
   - `http: ^1.2.2` - Requisições HTTP
   - `csv: ^6.0.0` - Parsing de CSV do Google Sheets
+  - `image_picker: ^1.1.2` - Seleção de imagens da câmera/galeria
+  - `flutter_image_compress: ^2.3.0` - Compressão de imagens
+  - `cached_network_image: ^3.4.1` - Cache de imagens da rede
+  - `path_provider: ^2.1.4` - Acesso a diretórios do sistema
+  - `flutter_dotenv: ^5.1.0` - Variáveis de ambiente
 - **Design:** Material Design 3 (Identidade Visual Claro: Vermelho #EE1105, Branco, Cinza).
 
 ## 🏗️ Arquitetura do Código
@@ -31,16 +36,23 @@ lib/
 ├── theme/
 │   └── app_colors.dart      # Definição de cores e temas
 ├── models/
-│   └── site.dart            # Modelo de dados do Site
+│   └── site.dart            # Modelo de dados do Site (inclui imageUrls)
 ├── services/
-│   └── data_service.dart    # Integração com Google Sheets (CSV)
+│   ├── data_service.dart    # Integração com Google Sheets (CSV)
+│   └── image_service.dart   # Upload/gerenciamento de imagens (Cloudinary)
 ├── repositories/
 │   └── site_repository.dart  # Camada de dados com fallback mock
 ├── providers/
-│   └── site_provider.dart   # Gerenciador de estado (Provider)
+│   ├── site_provider.dart    # Gerenciador de estado (Provider)
+│   └── image_provider.dart   # Gerenciador de estado de imagens
+├── config/
+│   └── cloudinary_config.dart # Configuração do Cloudinary e Google Apps Script
+├── widgets/
+│   └── image_picker_dialog.dart # Dialog para seleção de imagem
 └── screens/
     ├── home_screen.dart      # Tela principal com lista e busca
-    └── site_detail_screen.dart # Tela de detalhes do site
+    ├── site_detail_screen.dart # Tela de detalhes do site
+    └── image_viewer_screen.dart # Visualizador de imagens
 test/
 ├── models/
 │   └── site_test.dart       # Testes do modelo Site
@@ -66,6 +78,19 @@ SiteRepository (Google Sheets + mock fallback + busca insensível a acentos)
 SiteProvider (estado + filtros de busca/município)
     ↓
 Screens (UI com Material Design 3)
+
+Fluxo de Upload de Imagem:
+Camera/Galeria (image_picker)
+    ↓
+Compressão (flutter_image_compress)
+    ↓
+Upload para Cloudinary
+    ↓
+Sincronização com Google Sheets (Google Apps Script)
+    ↓
+ImageProvider (estado das imagens)
+    ↓
+Site (imageUrls atualizado)
 ```
 
 ## 📋 Requisitos de Negócio
@@ -74,6 +99,7 @@ Screens (UI com Material Design 3)
 - **Pesquisa Inteligente:** Filtrar por Site ID, Sigla, Nome do Site, Município ou Técnico (busca insensível a acentos e maiúsculas/minúsculas).
 - **Informações Obrigatórias:** Nome, Endereço, Coordenadas (Lat/Long), Município, Técnico, Detentora e UC.
 - **Integração de GPS:** Botão direto para abrir a rota no Google Maps nativo do Android.
+- **Gestão de Imagens:** Até 5 fotos por site, upload via Cloudinary, compressão automática, sincronização com Google Sheets.
 
 ## 🎨 Especificações de UI/UX
 
@@ -98,11 +124,13 @@ class Site {
   final String detentora;     // Ex: ATC
   final String uc;            // UC do site
   final String status;         // 'Ativo' ou 'Desativado'
+  final List<String> imageUrls; // Lista de URLs das fotos (max 5)
 
   // Métodos úteis:
   bool get ativo;                        // Verifica se status == 'ativo'
   String get googleMapsNavigationUrl;    // URL de navegação
   String get googleMapsViewUrl;          // URL de visualização do mapa
+  String getThumbnailUrl(String imageUrl) // Gera URL de thumbnail
 }
 ```
 
@@ -121,6 +149,11 @@ class Site {
 | `detentora` | Proprietário da torre | `ATC` |
 | `uc` | UC do site | `12345678` |
 | `status` | Status do site | `Ativo` |
+| `foto_1` | URL da primeira foto (Cloudinary) | `https://res.cloudinary.com/...` |
+| `foto_2` | URL da segunda foto | `https://res.cloudinary.com/...` |
+| `foto_3` | URL da terceira foto | `https://res.cloudinary.com/...` |
+| `foto_4` | URL da quarta foto | `https://res.cloudinary.com/...` |
+| `foto_5` | URL da quinta foto | `https://res.cloudinary.com/...` |
 
 ## 🔗 Integração com Google Sheets
 
@@ -161,6 +194,93 @@ A navegação usa URL web para compatibilidade:
 https://www.google.com/maps/dir/?api=1&destination={latitude},{longitude}&navigate=yes
 ```
 
+## 📸 Funcionalidade de Upload de Imagens
+
+### Configuração do Cloudinary
+
+O app usa Cloudinary para armazenamento de imagens. Configure em `lib/config/cloudinary_config.dart`:
+
+```dart
+class CloudinaryConfig {
+  static const String cloudName = 'SEU_CLOUD_NAME';
+  static const String uploadPreset = 'SEU_UPLOAD_PRESET';
+  static const String googleAppsScriptUrl = 'URL_DO_GOOGLE_APPS_SCRIPT';
+}
+```
+
+**Para configurar o Cloudinary:**
+1. Criar conta em https://cloudinary.com
+2. Obter o Cloud Name em Settings → Cloud name
+3. Criar um Upload Preset em Settings → Upload → Upload presets (modo unsigned)
+4. Copiar o nome do preset para `uploadPreset`
+
+**Para configurar o Google Apps Script:**
+1. Criar um Google Apps Script que receba POST com `{site_id, imageUrls}`
+2. Implantar como aplicativo web (Executar como "Eu", Quem tem acesso "Qualquer pessoa")
+3. Copiar a URL para `googleAppsScriptUrl`
+
+### Fluxo de Upload de Imagens
+
+```
+1. Usuário seleciona imagem (câmera ou galeria)
+2. ImagePicker captura o arquivo
+3. ImageService valida (tamanho, extensão)
+4. FlutterImageCompress comprime a imagem
+5. Upload para Cloudinary via API unsigned
+6. ImageService valida URL retornada
+7. Sincronização com Google Sheets via Google Apps Script
+8. ImageProvider atualiza estado local
+9. UI mostra imagem carregada
+```
+
+### Limites e Validações
+
+- **Máximo de 5 imagens** por site
+- **Tamanho máximo de arquivo:** 25MB
+- **Formatos suportados:** JPG, JPEG, PNG, WEBP, HEIC
+- **Dimensões máximas:** 1920x2560 (HD)
+- **Qualidade de compressão:** 85%
+- **Rate limiting:** 2 segundos entre operações
+- **Upload timeout:** 30 segundos
+
+### Segurança
+
+Todas as operações de upload incluem validações:
+- Validação de HTTPS nas URLs do Cloudinary
+- Sanitização de nomes de arquivo
+- Proteção contra path traversal
+- Detecção de padrões perigosos (XSS, SQL injection)
+- Validação de domínio do Cloudinary
+- Sanitização do site_id antes de enviar para Google Sheets
+
+### ImageProvider
+
+Gerencia o estado das imagens de um site:
+
+```dart
+// Carrega imagens de um site
+await imageProvider.loadSiteImages(site);
+
+// Adiciona nova imagem
+await imageProvider.addImage(imageFile);
+
+// Substitui imagem existente
+await imageProvider.replaceImage(index, newImageFile);
+
+// Remove imagem
+await imageProvider.deleteImage(index);
+
+// Limpa estado
+imageProvider.clearImages();
+```
+
+**Propriedades:**
+- `imageUrls` - Lista de URLs das imagens
+- `canAddImage` - Verifica se pode adicionar mais
+- `imageCount` - Quantidade de imagens
+- `isLoading` - Estado de carregamento
+- `error` - Mensagem de erro (se houver)
+
 ## 🚀 Comandos de Desenvolvimento
 
 **Nota:** Executar sempre no diretório `app/` (ou usar `cd app` primeiro)
@@ -194,6 +314,11 @@ https://www.google.com/maps/dir/?api=1&destination={latitude},{longitude}&naviga
 
 | Commit | Descrição |
 |--------|-----------|
+| `5aeef3f` | security: Add protections and validations to image upload feature |
+| `10705ac` | test: Fix test files to match current codebase |
+| `3fdb964` | fix: Update Google Apps Script with better error handling and debugging |
+| `811d499` | feat: Add image upload and viewing functionality |
+| `b4ab26c` | Update CLAUDE.md - Versão 01: Documentação completa com comandos de teste e arquitetura aprimorada |
 | `8c7acf5` | Release v1.0.0 - Movel Tracker stable version |
 | `91b6d79` | Update header title to Movel Tracker |
 | `a76b5d5` | Update app name to Movel Tracker, add app icon, and fix search with accent-insensitive filtering |

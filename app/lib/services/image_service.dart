@@ -22,9 +22,9 @@ class ImageService {
   static const int imageQuality = 85;
   static const int minImageQuality = 70;
 
-  // Limites de tamanho de arquivo (10MB)
-  static const int maxFileSizeBytes = 10 * 1024 * 1024; // 10MB
-  static const int maxFileSizeKb = maxFileSizeBytes ~/ 1024; // 10MB em KB
+  // Limites de tamanho de arquivo (25MB)
+  static const int maxFileSizeBytes = 25 * 1024 * 1024; // 25MB
+  static const int maxFileSizeKb = maxFileSizeBytes ~/ 1024; // 25MB em KB
 
   // Tipos de arquivo permitidos
   static const List<String> allowedImageExtensions = [
@@ -68,7 +68,7 @@ class ImageService {
   /// Valida se o arquivo está dentro dos limites de tamanho
   bool _isFileSizeValid(File file) {
     try {
-      final fileSize = await file.length();
+      final fileSize = file.lengthSync();
       if (fileSize > maxFileSizeBytes) {
         debugPrint('Tamanho de arquivo excedido: ${(fileSize / (1024 * 1024)).toStringAsFixed(2)}MB');
         return false;
@@ -561,7 +561,7 @@ class ImageService {
     // Remove caracteres especiais e espaços extras
     return siteId
         .trim()
-        .replaceAll(RegExp(r'[<>;\'"\\]'), '')
+        .replaceAll(RegExp(r'[<>;"\\\\]'), '')
         .substring(0, siteId.length > 50 ? 50 : siteId.length);
   }
 }

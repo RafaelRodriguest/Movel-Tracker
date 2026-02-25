@@ -51,6 +51,16 @@ class ImageProvider extends ChangeNotifier {
   /// Getter para contagem de imagens
   int get imageCount => _imageUrls.length;
 
+  /// Valida se uma URL do Cloudinary é segura (HTTPS, domínio correto)
+  bool _isSecureCloudinaryUrl(String url) {
+    try {
+      final uri = Uri.parse(url);
+      return uri.scheme == 'https' && uri.host.contains('cloudinary.com');
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Verifica se pode fazer uma operação (rate limiting)
   bool _canPerformOperation() {
     if (_lastOperationTime == null) return true;
@@ -112,13 +122,6 @@ class ImageProvider extends ChangeNotifier {
     // Sanitiza URLs carregadas do site
     final sanitizedUrls = _sanitizeImageUrls(site.imageUrls);
 
-    // Valida URLs antes de salvar
-    for (final url in sanitizedUrls) {
-      if (url.isNotEmpty && !_imageService.isValidCloudinaryUrl(url)) {
-        debugPrint('Aviso: URL inválida ignorada: $url');
-      }
-    }
-
     _imageUrls = sanitizedUrls;
     _error = null;
     _lastOperationTime = null;
@@ -172,7 +175,7 @@ class ImageProvider extends ChangeNotifier {
       }
 
       // Validação 4: URL segura
-      if (!_imageService.isValidCloudinaryUrl(imageUrl)) {
+      if (!_isSecureCloudinaryUrl(imageUrl)) {
         _error = 'URL retornada não é segura';
         _isLoading = false;
         _lastOperationTime = null;
@@ -251,7 +254,7 @@ class ImageProvider extends ChangeNotifier {
       }
 
       // Validação 4: URL segura
-      if (!_imageService.isValidCloudinaryUrl(newImageUrl)) {
+      if (!_isSecureCloudinaryUrl(newImageUrl)) {
         _error = 'URL retornada não é segura';
         _isLoading = false;
         _lastOperationTime = null;
