@@ -98,9 +98,9 @@ class ImageService {
 
     // Limita tamanho do nome
     final maxLength = 255;
-    return withoutDangerousChars.length > maxLength
-        ? withoutDangerousChars.substring(0, maxLength)
-        : withoutDangerousChars;
+    return withoutDangerous.length > maxLength
+        ? withoutDangerous.substring(0, maxLength)
+        : withoutDangerous;
   }
 
   /// Valida se a URL do Cloudinary é segura
@@ -286,7 +286,7 @@ class ImageService {
         debugPrint('Upload bem-sucedido: $secureUrl');
 
         // Validação 6: URL não está vazia
-        if (secureUrl.isEmpty) {
+        if (secureUrl == null || secureUrl.isEmpty) {
           debugPrint('Erro: URL vazia retornada');
           return null;
         }
@@ -343,32 +343,29 @@ class ImageService {
 
       if (secureUrlMatch != null) {
         final url = secureUrlMatch.group(1);
-        // Validação: URL não contém caracteres perigosos
-        if (_hasDangerousPatterns(url)) {
+        if (url != null && _hasDangerousPatterns(url)) {
           debugPrint('Erro: URL contém padrões perigosos');
           return null;
         }
-        result['secure_url'] = url;
+        result['secure_url'] = url ?? '';
       }
 
       if (urlMatch != null) {
         final url = urlMatch.group(1);
-        // Validação: URL não contém caracteres perigosos
-        if (_hasDangerousPatterns(url)) {
+        if (url != null && _hasDangerousPatterns(url)) {
           debugPrint('Erro: URL contém padrões perigosos');
           return null;
         }
-        result['url'] = url;
+        result['url'] = url ?? '';
       }
 
       if (publicIdMatch != null) {
         final publicId = publicIdMatch.group(1);
-        // Validação: public_id não contém caracteres perigosos
-        if (_hasDangerousPatterns(publicId)) {
+        if (publicId != null && _hasDangerousPatterns(publicId)) {
           debugPrint('Erro: public_id contém padrões perigosos');
           return null;
         }
-        result['public_id'] = publicId;
+        result['public_id'] = publicId ?? '';
       }
 
       return result.isNotEmpty ? result : null;
