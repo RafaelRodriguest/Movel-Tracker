@@ -12,7 +12,7 @@ class CloudinaryConfig {
   /// URL do Google Apps Script para escrita na planilha
   /// Substitua após implantar o script em https://script.google.com/
   /// A URL será algo como: https://script.google.com/macros/s/XXXXXXXXXXXXXXXX/exec
-  static const String googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbyRtSV93BwfKy8x2tLKP_uHip_pE5We7tZOuLZaAqYUfP6ZGovj06PoDcUqOuNxughTsA/exec';
+  static const String googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbzzedQ-R9YFp7hjBP19xOw0DPwPSgyMYLlE_NTYnFDRx7Vxak3VtMoCtCshczF2M0cyKg/exec';
 
   /// Verifica se o Cloudinary está configurado
   static bool get isConfigured => cloudName.isNotEmpty && uploadPreset.isNotEmpty;
