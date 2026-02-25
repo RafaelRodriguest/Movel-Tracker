@@ -106,8 +106,12 @@ class DataService {
       'longitude',
       'detentora',
       'uc',
-      'tecnologias',
       'status',
+      'foto_1',
+      'foto_2',
+      'foto_3',
+      'foto_4',
+      'foto_5',
     ];
 
     for (final col in columns) {

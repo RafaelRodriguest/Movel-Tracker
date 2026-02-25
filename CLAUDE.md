@@ -72,7 +72,7 @@ Screens (UI com Material Design 3)
 
 - **Busca Offline-First:** O app carrega dados da planilha uma vez e permite busca local.
 - **Pesquisa Inteligente:** Filtrar por Site ID, Sigla, Nome do Site, Município ou Técnico (busca insensível a acentos e maiúsculas/minúsculas).
-- **Informações Obrigatórias:** Nome, Endereço, Coordenadas (Lat/Long), Município, Técnico, Detentora, UC e Tecnologias (2G, 3G, 4G, 5G).
+- **Informações Obrigatórias:** Nome, Endereço, Coordenadas (Lat/Long), Município, Técnico, Detentora e UC.
 - **Integração de GPS:** Botão direto para abrir a rota no Google Maps nativo do Android.
 
 ## 🎨 Especificações de UI/UX
@@ -97,12 +97,10 @@ class Site {
   final double longitude;      // Coordenada longitude (aceita vírgula)
   final String detentora;     // Ex: ATC
   final String uc;            // UC do site
-  final List<String> tecnologias; // ['4G', '5G']
   final String status;         // 'Ativo' ou 'Desativado'
 
   // Métodos úteis:
   bool get ativo;                        // Verifica se status == 'ativo'
-  bool hasTecnologia(String tecnologia); // Verifica se possui tecnologia específica
   String get googleMapsNavigationUrl;    // URL de navegação
   String get googleMapsViewUrl;          // URL de visualização do mapa
 }
@@ -122,7 +120,6 @@ class Site {
 | `longitude` | Coordenada longitude (vírgula ou ponto) | `-44,302` |
 | `detentora` | Proprietário da torre | `ATC` |
 | `uc` | UC do site | `12345678` |
-| `tecnologias` | Tecnologias disponíveis | `4G,5G` |
 | `status` | Status do site | `Ativo` |
 
 ## 🔗 Integração com Google Sheets

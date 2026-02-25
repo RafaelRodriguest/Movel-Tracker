@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'theme/app_colors.dart';
 import 'providers/site_provider.dart';
+import 'providers/image_provider.dart' as img;
+import 'services/image_service.dart';
 import 'screens/home_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await ImageService.initialize();
   runApp(const ClaroSitesApp());
 }
 
@@ -16,6 +20,7 @@ class ClaroSitesApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => SiteProvider()),
+        ChangeNotifierProvider(create: (_) => img.ImageProvider()),
       ],
       child: MaterialApp(
         title: 'Localizador de Sites - MA',

@@ -26,8 +26,11 @@ class SiteRepository {
         longitude: -44.3028,
         detentora: 'ATC',
         uc: '12345678',
-        tecnologias: ['4G', '5G', 'IOT'],
         status: 'Ativo',
+        imageUrls: [
+          'https://res.cloudinary.com/demo/image/upload/v1/sample1.jpg',
+          'https://res.cloudinary.com/demo/image/upload/v1/sample2.jpg',
+        ],
       ),
       Site(
         siteId: 'ITZ045',
@@ -40,8 +43,10 @@ class SiteRepository {
         longitude: -47.4833,
         detentora: 'ATC',
         uc: '87654321',
-        tecnologias: ['4G'],
         status: 'Ativo',
+        imageUrls: [
+          'https://res.cloudinary.com/demo/image/upload/v1/sample3.jpg',
+        ],
       ),
       Site(
         siteId: 'CXS012',
@@ -54,8 +59,8 @@ class SiteRepository {
         longitude: -43.3500,
         detentora: 'ATC',
         uc: '54321678',
-        tecnologias: ['4G', '5G'],
         status: 'Desativado',
+        imageUrls: [],
       ),
       Site(
         siteId: 'SLZ003',
@@ -68,8 +73,12 @@ class SiteRepository {
         longitude: -44.2650,
         detentora: 'AMX',
         uc: '98765432',
-        tecnologias: ['4G', '5G'],
         status: 'Ativo',
+        imageUrls: [
+          'https://res.cloudinary.com/demo/image/upload/v1/sample4.jpg',
+          'https://res.cloudinary.com/demo/image/upload/v1/sample5.jpg',
+          'https://res.cloudinary.com/demo/image/upload/v1/sample6.jpg',
+        ],
       ),
       Site(
         siteId: 'SJO015',
@@ -82,8 +91,8 @@ class SiteRepository {
         longitude: -44.2650,
         detentora: 'ATC',
         uc: '13579246',
-        tecnologias: ['4G'],
         status: 'Ativo',
+        imageUrls: [],
       ),
     ]);
   }
@@ -175,10 +184,5 @@ class SiteRepository {
     } catch (_) {
       return null;
     }
-  }
-
-  /// Filtra por tecnologia
-  List<Site> filterByTecnologia(String tecnologia) {
-    return _sites.where((s) => s.hasTecnologia(tecnologia)).toList();
   }
 }

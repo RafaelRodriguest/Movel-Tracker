@@ -382,34 +382,10 @@ class _SiteCard extends StatelessWidget {
               ),
               const SizedBox(height: 12),
 
-              // Tecnologias e Status
+              // Status
               Row(
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  // Chips de tecnologias
-                  ...site.tecnologias.take(3).map((tech) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 6),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          tech,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-
-                  const Spacer(),
-
-                  // Status
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
