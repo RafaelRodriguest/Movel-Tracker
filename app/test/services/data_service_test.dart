@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:claro_sites_ma/services/data_service.dart';
+import 'package:movel_tracker/services/data_service.dart';
 
 void main() {
   group('DataService Tests', () {

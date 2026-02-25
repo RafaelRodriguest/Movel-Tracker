@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:claro_sites_ma/providers/site_provider.dart';
+import 'package:movel_tracker/providers/site_provider.dart';
 
 void main() {
   group('SiteProvider Tests', () {

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:claro_sites_ma/models/site.dart';
+import 'package:movel_tracker/models/site.dart';
 
 void main() {
   group('Site Model Tests', () {
