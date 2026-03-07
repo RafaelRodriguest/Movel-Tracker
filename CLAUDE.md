@@ -61,7 +61,16 @@ flutter test --coverage
 flutter pub run flutter_launcher_icons
 ```
 
+## Roadmap de arquitetura
+
+A aplicação está sendo expandida. O plano completo está em `PLANO_IMPLEMENTACAO.md` e cobre:
+- Migração de Google Sheets para **Supabase PostgreSQL**
+- Autenticação com roles (viewer / editor / admin) via **Supabase Auth**
+- Upload de imagens via **Cloudinary** (25GB grátis)
+- Suporte a múltiplas UFs além do Maranhão
+
 ## Avisos importantes
 
 - **Nunca edite** `app/android/lib/` — é cópia legada de `app/lib/`, deve ser ignorada. Sempre trabalhe em `app/lib/`.
+- As regras de branching (GitFlow), geração de APKs e padrão de commits estão em `GITFLOW.md`.
 - Repositório remoto: https://github.com/RafaelRodriguest/Movel-Tracker.git
