@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="800" viewBox="0 0 400 800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fundo -->
+  <rect width="400" height="800" fill="#F8F6F5"/>
+
+  <!-- Status Bar -->
+  <rect width="400" height="30" fill="#FFFFFF"/>
+  <text x="20" y="20" font-family="Arial" font-size="12" fill="#000">12:45</text>
+  <rect x="340" y="10" width="20" height="12" rx="2" stroke="#000" stroke-width="1" fill="none"/>
+  <rect x="342" y="12" width="16" height="8" fill="#000"/>
+  <text x="365" y="20" font-family="Arial" font-size="12" fill="#000">100%</text>
+
+  <!-- Header -->
+  <rect width="400" height="60" fill="#FFFFFF" stroke="#EE1105" stroke-opacity="0.1" stroke-width="1"/>
+  <text x="50" y="38" font-family="Arial" font-size="18" fill="#000">←</text>
+  <text x="75" y="30" font-family="Arial" font-size="18" font-weight="bold" fill="#000">São Luís Centro</text>
+  <text x="75" y="50" font-family="Arial" font-size="14" fill="#666">📍 São Luís, MA</text>
+  <text x="370" y="38" text-anchor="middle" fill="#666" font-family="Arial" font-size="18">📤</text>
+
+  <!-- Mapa -->
+  <rect x="0" y="90" width="400" height="280" fill="#E8E8E8"/>
+  <rect x="0" y="90" width="400" height="280" fill="#A5D6A7"/>
+  <!-- Ruas simplificadas -->
+  <rect x="50" y="120" width="300" height="8" fill="#FFFFFF"/>
+  <rect x="150" y="90" width="8" height="220" fill="#FFFFFF"/>
+  <rect x="100" y="200" width="200" height="8" fill="#FFFFFF"/>
+  <rect x="50" y="250" width="300" height="8" fill="#FFFFFF"/>
+  <rect x="300" y="90" width="8" height="220" fill="#FFFFFF"/>
+  <!-- Marcador -->
+  <circle cx="200" cy="200" r="20" fill="#EE1105" opacity="0.3"/>
+  <circle cx="200" cy="200" r="12" fill="#EE1105"/>
+  <circle cx="200" cy="200" r="6" fill="#FFFFFF"/>
+  <!-- Botão de localização -->
+  <rect x="345" y="330" width="45" height="45" rx="8" fill="#FFFFFF" stroke="#E0E0E0"/>
+  <text x="367" y="360" text-anchor="middle" font-family="Arial" font-size="20">📍</text>
+
+  <!-- Informações -->
+  <rect x="16" y="385" width="368" height="70" rx="12" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="35" y="405" font-family="Arial" font-size="24" font-weight="bold" fill="#000">São Luís Centro</text>
+  <circle cx="38" cy="425" r="5" fill="#4CAF50"/>
+  <text x="48" y="430" font-family="Arial" font-size="13" fill="#4CAF50" font-weight="bold">Site Operacional</text>
+  <rect x="320" y="405" width="55" height="24" rx="12" fill="#EE1105" fill-opacity="0.1"/>
+  <text x="347" y="421" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#EE1105">ID: SLZ001</text>
+
+  <!-- Cards de info -->
+  <rect x="16" y="470" width="368" height="50" rx="12" fill="#FFFFFF" stroke="#EE1105" stroke-opacity="0.1" stroke-width="1"/>
+  <rect x="32" y="485" width="36" height="36" rx="8" fill="#EE1105" fill-opacity="0.1"/>
+  <text x="50" y="508" text-anchor="middle" font-family="Arial" font-size="18" fill="#EE1105">🗺️</text>
+  <text x="80" y="498" font-family="Arial" font-size="10" fill="#666" font-weight="bold">ENDEREÇO</text>
+  <text x="80" y="513" font-family="Arial" font-size="13" fill="#333">Av. Dom Pedro II, Centro</text>
+
+  <rect x="16" y="530" width="368" height="50" rx="12" fill="#FFFFFF" stroke="#EE1105" stroke-opacity="0.1" stroke-width="1"/>
+  <rect x="32" y="545" width="36" height="36" rx="8" fill="#EE1105" fill-opacity="0.1"/>
+  <text x="50" y="568" text-anchor="middle" font-family="Arial" font-size="18" fill="#EE1105">👤</text>
+  <text x="80" y="558" font-family="Arial" font-size="10" fill="#666" font-weight="bold">TÉCNICO</text>
+  <text x="80" y="573" font-family="Arial" font-size="13" fill="#333">João Silva</text>
+
+  <rect x="16" y="590" width="178" height="50" rx="12" fill="#FFFFFF" stroke="#EE1105" stroke-opacity="0.1" stroke-width="1"/>
+  <rect x="28" y="605" width="32" height="32" rx="8" fill="#EE1105" fill-opacity="0.1"/>
+  <text x="44" y="626" text-anchor="middle" font-family="Arial" font-size="16" fill="#EE1105">🧭</text>
+  <text x="68" y="615" font-family="Arial" font-size="9" fill="#666" font-weight="bold">COORDENADAS</text>
+  <text x="68" y="630" font-family="Arial" font-size="11" fill="#333">-2.53, -44.30</text>
+
+  <rect x="206" y="590" width="178" height="50" rx="12" fill="#FFFFFF" stroke="#EE1105" stroke-opacity="0.1" stroke-width="1"/>
+  <rect x="218" y="605" width="32" height="32" rx="8" fill="#EE1105" fill-opacity="0.1"/>
+  <text x="234" y="626" text-anchor="middle" font-family="Arial" font-size="16" fill="#EE1105">🏢</text>
+  <text x="258" y="615" font-family="Arial" font-size="9" fill="#666" font-weight="bold">PROPRIETÁRIO</text>
+  <text x="258" y="630" font-family="Arial" font-size="11" fill="#333">ATC</text>
+
+  <rect x="16" y="650" width="178" height="50" rx="12" fill="#FFFFFF" stroke="#EE1105" stroke-opacity="0.1" stroke-width="1"/>
+  <rect x="28" y="665" width="32" height="32" rx="8" fill="#EE1105" fill-opacity="0.1"/>
+  <text x="44" y="686" text-anchor="middle" font-family="Arial" font-size="16" fill="#EE1105">🏷️</text>
+  <text x="68" y="675" font-family="Arial" font-size="9" fill="#666" font-weight="bold">SIGLA</text>
+  <text x="68" y="690" font-family="Arial" font-size="11" fill="#333">MASLS7</text>
+
+  <rect x="206" y="650" width="178" height="50" rx="12" fill="#FFFFFF" stroke="#EE1105" stroke-opacity="0.1" stroke-width="1"/>
+  <rect x="218" y="665" width="32" height="32" rx="8" fill="#EE1105" fill-opacity="0.1"/>
+  <text x="234" y="686" text-anchor="middle" font-family="Arial" font-size="16" fill="#EE1105">⚡</text>
+  <text x="258" y="675" font-family="Arial" font-size="9" fill="#666" font-weight="bold">UC</text>
+  <text x="258" y="690" font-family="Arial" font-size="11" fill="#333">12345678</text>
+
+  <!-- Tecnologias -->
+  <rect x="16" y="710" width="368" height="60" rx="12" fill="#FFFFFF" stroke="#EE1105" stroke-opacity="0.1" stroke-width="1"/>
+  <text x="32" y="728" font-family="Arial" font-size="10" fill="#666" font-weight="bold">TECNOLOGIAS DISPONÍVEIS</text>
+  <rect x="32" y="740" width="50" height="22" rx="11" fill="#EE1105"/>
+  <text x="57" y="756" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#FFF">4G</text>
+  <rect x="90" y="740" width="50" height="22" rx="11" fill="#EE1105"/>
+  <text x="115" y="756" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#FFF">5G</text>
+  <rect x="148" y="740" width="50" height="22" rx="11" fill="#EE1105"/>
+  <text x="173" y="756" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#FFF">IOT</text>
+</svg>
