@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="800" viewBox="0 0 400 800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fundo -->
+  <rect width="400" height="800" fill="#F8F6F5"/>
+
+  <!-- Status Bar -->
+  <rect width="400" height="30" fill="#FFFFFF"/>
+  <text x="20" y="20" font-family="Arial" font-size="12" fill="#000">12:45</text>
+  <rect x="340" y="10" width="20" height="12" rx="2" stroke="#000" stroke-width="1" fill="none"/>
+  <rect x="342" y="12" width="16" height="8" fill="#000"/>
+  <text x="365" y="20" font-family="Arial" font-size="12" fill="#000">100%</text>
+
+  <!-- Header -->
+  <rect width="400" height="70" fill="#FFFFFF" stroke="#EE1105" stroke-opacity="0.1" stroke-width="1"/>
+  <circle cx="50" cy="38" r="18" fill="#EE1105"/>
+  <text x="50" y="44" text-anchor="middle" fill="#FFFFFF" font-family="Arial" font-size="14">📡</text>
+  <text x="80" y="30" font-family="Arial" font-size="16" font-weight="bold" fill="#000">Movel Tracker</text>
+  <text x="80" y="48" font-family="Arial" font-size="12" fill="#666">Localizador de Sites - MA</text>
+  <circle cx="370" cy="38" r="16" fill="#E0E0E0"/>
+  <text x="370" y="44" text-anchor="middle" fill="#666" font-family="Arial" font-size="14">👤</text>
+
+  <!-- Área de busca -->
+  <rect x="16" y="90" width="368" height="50" rx="25" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="35" y="120" font-family="Arial" font-size="14" fill="#999">Buscar por nome, ID ou município...</text>
+  <text x="370" y="120" text-anchor="middle" fill="#EE1105" font-family="Arial" font-size="18">🔍</text>
+
+  <!-- Contador -->
+  <text x="16" y="165" font-family="Arial" font-size="12" font-weight="bold" fill="#666">Sites encontrados (156)</text>
+  <text x="380" y="165" text-anchor="end" fill="#666" font-family="Arial" font-size="14">≡</text>
+
+  <!-- Chips de município -->
+  <rect x="16" y="180" width="60" height="32" rx="16" fill="#FFFFFF" stroke="#EE1105" stroke-width="1"/>
+  <text x="46" y="200" text-anchor="middle" font-family="Arial" font-size="11" fill="#EE1105" font-weight="bold">Todos</text>
+
+  <rect x="82" y="180" width="80" height="32" rx="16" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="122" y="200" text-anchor="middle" font-family="Arial" font-size="11" fill="#666">São Luís</text>
+
+  <rect x="168" y="180" width="80" height="32" rx="16" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="208" y="200" text-anchor="middle" font-family="Arial" font-size="11" fill="#666">Imperatriz</text>
+
+  <rect x="254" y="180" width="70" height="32" rx="16" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="1"/>
+  <text x="289" y="200" text-anchor="middle" font-family="Arial" font-size="11" fill="#666">Caxias</text>
+
+  <!-- Card 1 -->
+  <rect x="16" y="225" width="368" height="130" rx="12" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="30" y="240" width="100" height="24" rx="4" fill="#EE1105" fill-opacity="0.1"/>
+  <text x="80" y="256" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#EE1105">SLZ001 | MASLS7</text>
+  <text x="30" y="280" font-family="Arial" font-size="16" font-weight="bold" fill="#000">São Luís Centro</text>
+  <text x="35" y="300" font-family="Arial" font-size="12" fill="#666">📍 São Luís, MA</text>
+  <text x="35" y="318" font-family="Arial" font-size="10" fill="#999">📄 UC: 12345678</text>
+  <text x="35" y="335" font-family="Arial" font-size="10" fill="#999">👤 João Silva</text>
+  <rect x="310" y="270" width="50" height="50" rx="8" fill="#F8F6F5"/>
+  <text x="335" y="302" text-anchor="middle" fill="#EE1105" font-family="Arial" font-size="24">🗺️</text>
+  <rect x="30" y="345" width="40" height="20" rx="10" fill="#EE1105"/>
+  <text x="50" y="359" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#FFF">4G</text>
+  <rect x="75" y="345" width="40" height="20" rx="10" fill="#EE1105"/>
+  <text x="95" y="359" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#FFF">5G</text>
+  <circle cx="340" cy="355" r="4" fill="#4CAF50"/>
+  <text x="348" y="359" font-family="Arial" font-size="10" font-weight="bold" fill="#4CAF50">Ativo</text>
+
+  <!-- Card 2 -->
+  <rect x="16" y="370" width="368" height="130" rx="12" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="30" y="385" width="100" height="24" rx="4" fill="#EE1105" fill-opacity="0.1"/>
+  <text x="80" y="401" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#EE1105">ITZ045 | MAITZ2</text>
+  <text x="30" y="425" font-family="Arial" font-size="16" font-weight="bold" fill="#000">Imperatriz Matriz</text>
+  <text x="35" y="445" font-family="Arial" font-size="12" fill="#666">📍 Imperatriz, MA</text>
+  <text x="35" y="463" font-family="Arial" font-size="10" fill="#999">📄 UC: 87654321</text>
+  <text x="35" y="480" font-family="Arial" font-size="10" fill="#999">👤 Maria Santos</text>
+  <rect x="310" y="415" width="50" height="50" rx="8" fill="#F8F6F5"/>
+  <text x="335" y="447" text-anchor="middle" fill="#EE1105" font-family="Arial" font-size="24">🗺️</text>
+  <rect x="30" y="490" width="40" height="20" rx="10" fill="#EE1105"/>
+  <text x="50" y="504" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#FFF">4G</text>
+  <circle cx="340" cy="500" r="4" fill="#4CAF50"/>
+  <text x="348" y="504" font-family="Arial" font-size="10" font-weight="bold" fill="#4CAF50">Ativo</text>
+
+  <!-- Card 3 -->
+  <rect x="16" y="515" width="368" height="130" rx="12" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="30" y="530" width="100" height="24" rx="4" fill="#EE1105" fill-opacity="0.1"/>
+  <text x="80" y="546" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#EE1105">CXS012 | MACXS4</text>
+  <text x="30" y="570" font-family="Arial" font-size="16" font-weight="bold" fill="#000">Caxias Norte</text>
+  <text x="35" y="590" font-family="Arial" font-size="12" fill="#666">📍 Caxias, MA</text>
+  <text x="35" y="608" font-family="Arial" font-size="10" fill="#999">📄 UC: 54321678</text>
+  <text x="35" y="625" font-family="Arial" font-size="10" fill="#999">👤 Pedro Costa</text>
+  <rect x="310" y="560" width="50" height="50" rx="8" fill="#F8F6F5"/>
+  <text x="335" y="592" text-anchor="middle" fill="#EE1105" font-family="Arial" font-size="24">🗺️</text>
+  <rect x="30" y="635" width="40" height="20" rx="10" fill="#EE1105"/>
+  <text x="50" y="649" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#FFF">4G</text>
+  <rect x="75" y="635" width="40" height="20" rx="10" fill="#EE1105"/>
+  <text x="95" y="649" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#FFF">5G</text>
+  <circle cx="340" cy="645" r="4" fill="#F44336"/>
+  <text x="348" y="649" font-family="Arial" font-size="10" font-weight="bold" fill="#F44336">Inativo</text>
+
+  <!-- Barra de navegação inferior -->
+  <rect x="0" y="740" width="400" height="60" fill="#FFFFFF" stroke="#EE1105" stroke-opacity="0.1" stroke-width="1"/>
+  <rect x="50" y="745" width="200" height="50" rx="8" fill="#EE1105"/>
+  <text x="150" y="778" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#FFF">INICIAR ROTA</text>
+</svg>

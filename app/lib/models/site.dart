@@ -41,8 +41,8 @@ class Site {
       endereco: json['endereco'] ?? '',
       municipio: json['municipio'] ?? '',
       tecnico: json['tecnico'] ?? '',
-      latitude: _parseCoordinate(json['latitude']?.toString()),
-      longitude: _parseCoordinate(json['longitude']?.toString()),
+      latitude: _parseCoordinate(json['latitude']),
+      longitude: _parseCoordinate(json['longitude']),
       detentora: json['detentora'] ?? '',
       uc: json['uc']?.toString() ?? '',
       tecnologias: _parseTecnologias(json['tecnologias']?.toString()),
@@ -86,13 +86,11 @@ class Site {
         .toList();
   }
 
-  /// Parser de coordenadas que aceita vírgula ou ponto como separador decimal
-  static double _parseCoordinate(String? value) {
-    if (value == null || value.isEmpty) {
-      return 0.0;
-    }
-    // Substitui vírgula por ponto para parsing correto (formato brasileiro)
-    final normalized = value.replaceAll(',', '.');
+  /// Parser de coordenadas — aceita double (Supabase) ou String com vírgula/ponto (CSV)
+  static double _parseCoordinate(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is num) return value.toDouble();
+    final normalized = value.toString().replaceAll(',', '.');
     return double.tryParse(normalized) ?? 0.0;
   }
 

@@ -37,11 +37,10 @@ class SiteProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // Tenta carregar do Google Sheets primeiro
-      final sheetsSites = await _repository.loadFromGoogleSheets();
+      // Tenta carregar do Supabase
+      final sheetsSites = await _repository.loadFromSupabase();
 
       if (sheetsSites != null && sheetsSites.isNotEmpty) {
-        // Dados carregados do Google Sheets
         _allSites = sheetsSites;
       } else {
         // Fallback para dados mock locais
