@@ -7,6 +7,7 @@ import 'providers/auth_provider.dart';
 import 'providers/site_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/reset_password_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -94,7 +95,9 @@ class _AppEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isLoggedIn = context.watch<AuthProvider>().isLoggedIn;
-    return isLoggedIn ? const HomeScreen() : const LoginScreen();
+    final auth = context.watch<AuthProvider>();
+    if (auth.isPasswordRecovery) return const ResetPasswordScreen();
+    if (auth.isLoggedIn) return const HomeScreen();
+    return const LoginScreen();
   }
 }

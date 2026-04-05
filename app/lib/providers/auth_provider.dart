@@ -9,11 +9,13 @@ class AuthProvider with ChangeNotifier {
   UserProfile? _profile;
   bool _isLoading = false;
   String? _error;
+  bool _isPasswordRecovery = false;
 
   bool get isLoggedIn => _session != null;
   UserProfile? get profile => _profile;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  bool get isPasswordRecovery => _isPasswordRecovery;
 
   static const _allowedDomains = ['claro.com.br', 'stte.com.br'];
 
@@ -23,6 +25,19 @@ class AuthProvider with ChangeNotifier {
 
     _client.auth.onAuthStateChange.listen((data) {
       _session = data.session;
+
+      if (data.event == AuthChangeEvent.passwordRecovery) {
+        // Link de redefinição de senha foi clicado — mostra tela de nova senha
+        _isPasswordRecovery = true;
+        notifyListeners();
+        return;
+      }
+
+      if (data.event == AuthChangeEvent.userUpdated) {
+        // Senha foi atualizada — volta ao fluxo normal
+        _isPasswordRecovery = false;
+      }
+
       if (_session != null) {
         _loadProfile();
       } else {
@@ -64,6 +79,19 @@ class AuthProvider with ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<String?> updatePassword(String newPassword) async {
+    try {
+      await _client.auth.updateUser(UserAttributes(password: newPassword));
+      _isPasswordRecovery = false;
+      notifyListeners();
+      return null; // sucesso
+    } on AuthException catch (e) {
+      return e.message;
+    } catch (_) {
+      return 'Erro ao atualizar senha.';
     }
   }
 
