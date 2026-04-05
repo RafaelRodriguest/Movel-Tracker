@@ -12,6 +12,7 @@ class Site {
   final String uc;
   final List<String> tecnologias;
   final String status;
+  final List<String?> imageUrls;
 
   Site({
     required this.siteId,
@@ -26,7 +27,8 @@ class Site {
     required this.uc,
     required this.tecnologias,
     this.status = 'Ativo',
-  });
+    List<String?>? imageUrls,
+  }) : imageUrls = imageUrls ?? List.filled(5, null);
 
   /// Cria um Site a partir de um mapa (JSON/CSV)
   factory Site.fromJson(Map<String, dynamic> json) {
@@ -47,6 +49,13 @@ class Site {
       uc: json['uc']?.toString() ?? '',
       tecnologias: _parseTecnologias(json['tecnologias']?.toString()),
       status: finalStatus,
+      imageUrls: [
+        json['foto_1'] as String?,
+        json['foto_2'] as String?,
+        json['foto_3'] as String?,
+        json['foto_4'] as String?,
+        json['foto_5'] as String?,
+      ],
     );
   }
 
@@ -65,7 +74,30 @@ class Site {
       'uc': uc,
       'tecnologias': tecnologias.join(','),
       'status': status,
+      'foto_1': imageUrls.length > 0 ? imageUrls[0] : null,
+      'foto_2': imageUrls.length > 1 ? imageUrls[1] : null,
+      'foto_3': imageUrls.length > 2 ? imageUrls[2] : null,
+      'foto_4': imageUrls.length > 3 ? imageUrls[3] : null,
+      'foto_5': imageUrls.length > 4 ? imageUrls[4] : null,
     };
+  }
+
+  Site copyWith({List<String?>? imageUrls}) {
+    return Site(
+      siteId: siteId,
+      sigla: sigla,
+      nome: nome,
+      endereco: endereco,
+      municipio: municipio,
+      tecnico: tecnico,
+      latitude: latitude,
+      longitude: longitude,
+      detentora: detentora,
+      uc: uc,
+      tecnologias: tecnologias,
+      status: status,
+      imageUrls: imageUrls ?? this.imageUrls,
+    );
   }
 
   /// Retorna true se o site estiver ativo (para compatibilidade)
