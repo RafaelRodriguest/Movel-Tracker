@@ -1,11 +1,11 @@
 import '../models/site.dart';
-import '../services/data_service.dart';
+import '../services/supabase_service.dart';
 
 /// Repositório de Sites
-/// Pode carregar dados do Google Sheets ou usar dados mock local
+/// Carrega dados do Supabase ou usa dados mock local como fallback
 class SiteRepository {
   final List<Site> _sites = [];
-  final DataService _dataService = DataService();
+  final SupabaseService _supabaseService = SupabaseService();
 
   SiteRepository() {
     // Dados mock são carregados apenas como fallback
@@ -88,11 +88,11 @@ class SiteRepository {
     ]);
   }
 
-  /// Carrega sites do Google Sheets
+  /// Carrega sites do Supabase
   /// Retorna a lista de sites carregados ou null se falhar
-  Future<List<Site>?> loadFromGoogleSheets({String? planilhaId}) async {
+  Future<List<Site>?> loadFromSupabase() async {
     try {
-      final sites = await _dataService.fetchSites();
+      final sites = await _supabaseService.fetchSites();
       if (sites.isNotEmpty) {
         _sites.clear();
         _sites.addAll(sites);
@@ -100,14 +100,8 @@ class SiteRepository {
       }
       return null;
     } catch (e) {
-      // Em caso de erro, retorna null (mantém os dados mock)
       return null;
     }
-  }
-
-  /// Verifica se a URL do Google Sheets está configurada
-  bool isGoogleSheetsConfigured() {
-    return _dataService.isUrlConfigured();
   }
 
   /// Retorna todos os sites
