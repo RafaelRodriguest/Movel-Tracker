@@ -31,6 +31,14 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
   void initState() {
     super.initState();
     _imageUrls = List.from(widget.site.imageUrls);
+    _loadFotos();
+  }
+
+  Future<void> _loadFotos() async {
+    try {
+      final urls = await _supabaseService.fetchSiteFotos(widget.site.siteId);
+      if (mounted) setState(() => _imageUrls = urls);
+    } catch (_) {}
   }
 
   Future<void> _pickAndUpload(int index, {required bool fromCamera}) async {
@@ -92,7 +100,8 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
     }
   }
 
-  void _showSlotOptions(int index) {
+  // Slot vazio: opções para adicionar foto
+  void _showAddOptions(int index) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -102,6 +111,13 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(
+                'Adicionar foto',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ),
             ListTile(
               leading: const Icon(Icons.camera_alt_outlined),
               title: const Text('Câmera'),
@@ -124,7 +140,8 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
     );
   }
 
-  void _showPhotoOptions(int index) {
+  // Slot com foto: visualizar, trocar ou excluir
+  void _showPhotoOptions(int index, String url) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -135,11 +152,19 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
+              leading: const Icon(Icons.fullscreen),
+              title: const Text('Visualizar foto'),
+              onTap: () {
+                Navigator.pop(context);
+                _viewPhoto(url);
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.sync_outlined),
               title: const Text('Trocar foto'),
               onTap: () {
                 Navigator.pop(context);
-                _showSlotOptions(index);
+                _showAddOptions(index);
               },
             ),
             ListTile(
@@ -150,10 +175,43 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
                 _deletePhoto(index);
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.close),
-              title: const Text('Cancelar'),
-              onTap: () => Navigator.pop(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _viewPhoto(String url) {
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.black,
+        insetPadding: EdgeInsets.zero,
+        child: Stack(
+          children: [
+            Center(
+              child: InteractiveViewer(
+                child: CachedNetworkImage(
+                  imageUrl: url,
+                  fit: BoxFit.contain,
+                  placeholder: (_, __) => const Center(
+                    child: CircularProgressIndicator(color: Colors.white),
+                  ),
+                  errorWidget: (_, __, ___) => const Icon(
+                    Icons.broken_image_outlined,
+                    color: Colors.white,
+                    size: 64,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 16,
+              right: 16,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                onPressed: () => Navigator.pop(context),
+              ),
             ),
           ],
         ),
@@ -688,7 +746,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
     return GestureDetector(
       onTap: isLoading
           ? null
-          : () => url != null ? _showPhotoOptions(index) : _showSlotOptions(index),
+          : () => url != null ? _showPhotoOptions(index, url) : _showAddOptions(index),
       child: Container(
         width: 96,
         height: 96,
