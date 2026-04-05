@@ -61,10 +61,13 @@ class AuthProvider with ChangeNotifier {
     appLinks.uriLinkStream.listen(_handleUri);
   }
 
-  void _handleUri(Uri uri) {
-    // O fragment do URI contém "type=recovery" quando vem do e-mail
+  Future<void> _handleUri(Uri uri) async {
     final params = Uri.splitQueryString(uri.fragment);
     if (params['type'] == 'recovery') {
+      try {
+        // Estabelece a sessão a partir do token do link antes de mostrar a tela
+        await _client.auth.getSessionFromUrl(uri);
+      } catch (_) {}
       _isPasswordRecovery = true;
       notifyListeners();
     }
