@@ -3,8 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config/env.dart';
 import 'theme/app_colors.dart';
+import 'providers/auth_provider.dart';
 import 'providers/site_provider.dart';
 import 'screens/home_screen.dart';
+import 'screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,10 +24,11 @@ class ClaroSitesApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => SiteProvider()),
       ],
       child: MaterialApp(
-        title: 'Localizador de Sites - MA',
+        title: 'Movel Tracker',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,
@@ -80,8 +83,18 @@ class ClaroSitesApp extends StatelessWidget {
             ),
           ),
         ),
-        home: const HomeScreen(),
+        home: const _AppEntry(),
       ),
     );
+  }
+}
+
+class _AppEntry extends StatelessWidget {
+  const _AppEntry();
+
+  @override
+  Widget build(BuildContext context) {
+    final isLoggedIn = context.watch<AuthProvider>().isLoggedIn;
+    return isLoggedIn ? const HomeScreen() : const LoginScreen();
   }
 }

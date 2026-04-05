@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import '../models/site.dart';
+import '../providers/auth_provider.dart';
 import '../providers/site_provider.dart';
 import '../services/cloudinary_service.dart';
 import '../services/supabase_service.dart';
@@ -53,7 +54,13 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
     setState(() => _loadingSlots[index] = true);
     try {
       final url = await _cloudinaryService.upload(File(picked.path));
+      final isNew = _imageUrls[index] == null;
       await _supabaseService.updateFoto(widget.site.siteId, index, url);
+      await _supabaseService.insertAuditLog(
+        siteId: widget.site.siteId,
+        action: isNew ? 'foto_add' : 'foto_update',
+        detail: 'foto_${index + 1} → $url',
+      );
       final updated = List<String?>.from(_imageUrls);
       updated[index] = url;
       if (mounted) _syncUrls(updated);
@@ -91,6 +98,11 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
     setState(() => _loadingSlots[index] = true);
     try {
       await _supabaseService.deleteFoto(widget.site.siteId, index);
+      await _supabaseService.insertAuditLog(
+        siteId: widget.site.siteId,
+        action: 'foto_delete',
+        detail: 'foto_${index + 1} removida',
+      );
       final updated = List<String?>.from(_imageUrls);
       updated[index] = null;
       if (mounted) _syncUrls(updated);
@@ -747,11 +759,24 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
   Widget _buildPhotoSlot(int index) {
     final url = _imageUrls.length > index ? _imageUrls[index] : null;
     final isLoading = _loadingSlots[index];
+    final isCellOwner =
+        context.read<AuthProvider>().profile?.isCellOwner ?? false;
 
     return GestureDetector(
       onTap: isLoading
           ? null
-          : () => url != null ? _showPhotoOptions(index, url) : _showAddOptions(index),
+          : () {
+              if (url != null) {
+                // cell_owner vê opções completas; geral só visualiza
+                if (isCellOwner) {
+                  _showPhotoOptions(index, url);
+                } else {
+                  _viewPhoto(url);
+                }
+              } else if (isCellOwner) {
+                _showAddOptions(index);
+              }
+            },
       child: Container(
         width: 96,
         height: 96,

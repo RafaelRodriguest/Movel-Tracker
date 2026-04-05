@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/site.dart';
+import '../providers/auth_provider.dart';
 import '../providers/site_provider.dart';
 import '../theme/app_colors.dart';
 import 'site_detail_screen.dart';
@@ -69,9 +70,48 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.account_circle),
-                onPressed: () {},
+              Consumer<AuthProvider>(
+                builder: (context, auth, _) => PopupMenuButton(
+                  icon: const Icon(Icons.account_circle),
+                  itemBuilder: (_) => <PopupMenuEntry>[
+                    PopupMenuItem(
+                      enabled: false,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            auth.profile?.nome ?? '',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textLight,
+                            ),
+                          ),
+                          Text(
+                            auth.profile?.isCellOwner == true
+                                ? 'Cell Owner'
+                                : 'Geral',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuDivider(),
+                    PopupMenuItem(
+                      onTap: () => context.read<AuthProvider>().signOut(),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.logout, color: Colors.red, size: 18),
+                          SizedBox(width: 8),
+                          Text('Sair',
+                              style: TextStyle(color: Colors.red)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
