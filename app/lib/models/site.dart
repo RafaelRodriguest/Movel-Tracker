@@ -82,6 +82,24 @@ class Site {
     };
   }
 
+  Site copyWith({List<String?>? imageUrls}) {
+    return Site(
+      siteId: siteId,
+      sigla: sigla,
+      nome: nome,
+      endereco: endereco,
+      municipio: municipio,
+      tecnico: tecnico,
+      latitude: latitude,
+      longitude: longitude,
+      detentora: detentora,
+      uc: uc,
+      tecnologias: tecnologias,
+      status: status,
+      imageUrls: imageUrls ?? this.imageUrls,
+    );
+  }
+
   /// Retorna true se o site estiver ativo (para compatibilidade)
   bool get ativo {
     final s = status.trim().toLowerCase();

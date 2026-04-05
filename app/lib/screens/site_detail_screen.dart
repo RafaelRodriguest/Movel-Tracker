@@ -5,7 +5,9 @@ import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
 import '../models/site.dart';
+import '../providers/site_provider.dart';
 import '../services/cloudinary_service.dart';
 import '../services/supabase_service.dart';
 import '../theme/app_colors.dart';
@@ -37,8 +39,15 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
   Future<void> _loadFotos() async {
     try {
       final urls = await _supabaseService.fetchSiteFotos(widget.site.siteId);
-      if (mounted) setState(() => _imageUrls = urls);
+      if (mounted) _syncUrls(urls);
     } catch (_) {}
+  }
+
+  void _syncUrls(List<String?> urls) {
+    setState(() => _imageUrls = urls);
+    if (mounted) {
+      context.read<SiteProvider>().updateSiteImageUrls(widget.site.siteId, urls);
+    }
   }
 
   Future<void> _pickAndUpload(int index, {required bool fromCamera}) async {
@@ -53,7 +62,9 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
     try {
       final url = await _cloudinaryService.upload(File(picked.path));
       await _supabaseService.updateFoto(widget.site.siteId, index, url);
-      setState(() => _imageUrls[index] = url);
+      final updated = List<String?>.from(_imageUrls);
+      updated[index] = url;
+      if (mounted) _syncUrls(updated);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -88,7 +99,9 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
     setState(() => _loadingSlots[index] = true);
     try {
       await _supabaseService.deleteFoto(widget.site.siteId, index);
-      setState(() => _imageUrls[index] = null);
+      final updated = List<String?>.from(_imageUrls);
+      updated[index] = null;
+      if (mounted) _syncUrls(updated);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -129,6 +129,15 @@ class SiteProvider with ChangeNotifier {
     _filteredSites = result;
   }
 
+  /// Atualiza as URLs de foto de um site no estado local
+  void updateSiteImageUrls(String siteId, List<String?> urls) {
+    final index = _allSites.indexWhere((s) => s.siteId == siteId);
+    if (index == -1) return;
+    _allSites[index] = _allSites[index].copyWith(imageUrls: urls);
+    _applyFilters();
+    notifyListeners();
+  }
+
   /// Retorna um site específico por ID
   Site? getSiteById(String siteId) {
     return _repository.getSiteById(siteId);
