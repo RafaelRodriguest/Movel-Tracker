@@ -192,11 +192,27 @@ estado de loading por slot. Cada um dos 5 slots:
 - [x] Planejamento documentado
 - [x] Credenciais Cloudinary identificadas (`dz9mdzht8` / `movel_tracker_preset`)
 - [x] Banco Supabase já possui colunas `foto_1..foto_5`
-- [ ] Adicionar dependências ao `pubspec.yaml`
-- [ ] Atualizar `env.dart`
-- [ ] Atualizar `Site` model
-- [ ] Criar `CloudinaryService`
-- [ ] Atualizar `SupabaseService` (updateFoto + deleteFoto)
-- [ ] Atualizar `SiteDetailScreen`
-- [ ] Adicionar permissões no `AndroidManifest.xml`
-- [ ] Gerar APK de teste e validar no dispositivo
+- [x] Adicionar dependências ao `pubspec.yaml`
+- [x] Atualizar `env.dart`
+- [x] Atualizar `Site` model
+- [x] Criar `CloudinaryService`
+- [x] Atualizar `SupabaseService` (updateFoto + deleteFoto)
+- [x] Atualizar `SiteDetailScreen`
+- [x] Adicionar permissões no `AndroidManifest.xml`
+- [x] Gerar APK de teste e validar no dispositivo
+
+## ⚠️ Atenção: RLS no Supabase
+
+Para que o UPDATE das fotos funcione com a `anon key`, é obrigatório criar
+uma policy de UPDATE na tabela `sites`:
+
+```sql
+create policy "Allow anon update"
+on sites for update
+to anon
+using (true)
+with check (true);
+```
+
+Sem essa policy, o Supabase bloqueia o UPDATE silenciosamente (sem erro),
+e as fotos aparecem localmente mas somem ao reabrir o app.
