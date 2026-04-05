@@ -32,22 +32,14 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
   @override
   void initState() {
     super.initState();
+    // Usa o provider como fonte da verdade — já atualizado em cada operação
     _imageUrls = List.from(widget.site.imageUrls);
-    _loadFotos();
   }
 
-  Future<void> _loadFotos() async {
-    try {
-      final urls = await _supabaseService.fetchSiteFotos(widget.site.siteId);
-      if (mounted) _syncUrls(urls);
-    } catch (_) {}
-  }
-
+  // Atualiza estado local + provider atomicamente
   void _syncUrls(List<String?> urls) {
     setState(() => _imageUrls = urls);
-    if (mounted) {
-      context.read<SiteProvider>().updateSiteImageUrls(widget.site.siteId, urls);
-    }
+    context.read<SiteProvider>().updateSiteImageUrls(widget.site.siteId, urls);
   }
 
   Future<void> _pickAndUpload(int index, {required bool fromCamera}) async {
@@ -68,7 +60,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erro ao fazer upload da foto.')),
+          SnackBar(content: Text('Erro: $e')),
         );
       }
     } finally {
