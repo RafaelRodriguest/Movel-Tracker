@@ -1,3 +1,4 @@
+import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_profile.dart';
@@ -27,14 +28,12 @@ class AuthProvider with ChangeNotifier {
       _session = data.session;
 
       if (data.event == AuthChangeEvent.passwordRecovery) {
-        // Link de redefinição de senha foi clicado — mostra tela de nova senha
         _isPasswordRecovery = true;
         notifyListeners();
         return;
       }
 
       if (data.event == AuthChangeEvent.userUpdated) {
-        // Senha foi atualizada — volta ao fluxo normal
         _isPasswordRecovery = false;
       }
 
@@ -45,6 +44,30 @@ class AuthProvider with ChangeNotifier {
       }
       notifyListeners();
     });
+
+    // Detecta deep link diretamente — cobre cold start e warm start
+    _listenDeepLinks();
+  }
+
+  void _listenDeepLinks() {
+    final appLinks = AppLinks();
+
+    // Cold start: app aberto pelo link
+    appLinks.getInitialLink().then((uri) {
+      if (uri != null) _handleUri(uri);
+    });
+
+    // Warm start: app já aberto, link clicado
+    appLinks.uriLinkStream.listen(_handleUri);
+  }
+
+  void _handleUri(Uri uri) {
+    // O fragment do URI contém "type=recovery" quando vem do e-mail
+    final params = Uri.splitQueryString(uri.fragment);
+    if (params['type'] == 'recovery') {
+      _isPasswordRecovery = true;
+      notifyListeners();
+    }
   }
 
   Future<void> signIn(String login, String password) async {
