@@ -38,19 +38,14 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // Busca o e-mail vinculado ao login informado
-      final result = await _client
-          .from('profiles')
-          .select('email')
-          .eq('login', login.trim())
-          .maybeSingle();
+      // Busca o e-mail via RPC (bypassa RLS pois usuário ainda não está autenticado)
+      final email = await _client
+          .rpc('get_email_by_login', params: {'p_login': login.trim()});
 
-      if (result == null) {
+      if (email == null || (email as String).isEmpty) {
         _error = 'Login não encontrado.';
         return;
       }
-
-      final email = result['email'] as String;
 
       // Valida domínio
       final domain = email.split('@').last.toLowerCase();
