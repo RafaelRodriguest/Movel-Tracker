@@ -13,6 +13,8 @@ class Site {
   final List<String> tecnologias;
   final String status;
   final List<String?> imageUrls;
+  final String? consumoAtual;
+  final String? padraoChave;
 
   Site({
     required this.siteId,
@@ -28,6 +30,8 @@ class Site {
     required this.tecnologias,
     this.status = 'Ativo',
     List<String?>? imageUrls,
+    this.consumoAtual,
+    this.padraoChave,
   }) : imageUrls = imageUrls ?? List.filled(5, null);
 
   /// Cria um Site a partir de um mapa (JSON/CSV)
@@ -56,6 +60,8 @@ class Site {
         json['foto_4'] as String?,
         json['foto_5'] as String?,
       ],
+      consumoAtual: json['consumo_atual']?.toString(),
+      padraoChave: json['padrao_chave']?.toString(),
     );
   }
 
@@ -97,6 +103,8 @@ class Site {
       tecnologias: tecnologias,
       status: status,
       imageUrls: imageUrls ?? this.imageUrls,
+      consumoAtual: consumoAtual,
+      padraoChave: padraoChave,
     );
   }
 

@@ -39,4 +39,19 @@ class SupabaseService {
         .update({'foto_${index + 1}': null})
         .eq('site_id', siteId);
   }
+
+  Future<void> insertAuditLog({
+    required String siteId,
+    required String action,
+    String? detail,
+  }) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return;
+    await _client.from('audit_log').insert({
+      'user_id': userId,
+      'site_id': siteId,
+      'action': action,
+      'detail': detail,
+    });
+  }
 }

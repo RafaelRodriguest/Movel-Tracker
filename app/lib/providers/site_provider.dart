@@ -109,9 +109,9 @@ class SiteProvider with ChangeNotifier {
   void _applyFilters() {
     List<Site> result = _allSites;
 
-    // Filtro por município
+    // Filtro por município — usa _allSites para refletir estado mais recente (ex: fotos atualizadas)
     if (_selectedMunicipio != 'Todos') {
-      result = _repository.filterByMunicipio(_selectedMunicipio);
+      result = _allSites.where((s) => s.municipio == _selectedMunicipio).toList();
     }
 
     // Filtro por busca de texto (case-insensitive e acent-insensitive)
