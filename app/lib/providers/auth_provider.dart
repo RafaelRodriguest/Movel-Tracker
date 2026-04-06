@@ -24,6 +24,8 @@ class AuthProvider with ChangeNotifier {
     _session = _client.auth.currentSession;
     if (_session != null) _loadProfile();
 
+    _listenDeepLinks();
+
     _client.auth.onAuthStateChange.listen((data) {
       _session = data.session;
 
@@ -45,29 +47,31 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
     });
 
-    // Detecta deep link diretamente — cobre cold start e warm start
-    _listenDeepLinks();
   }
 
   void _listenDeepLinks() {
     final appLinks = AppLinks();
 
-    // Cold start: app aberto pelo link
     appLinks.getInitialLink().then((uri) {
       if (uri != null) _handleUri(uri);
     });
 
-    // Warm start: app já aberto, link clicado
     appLinks.uriLinkStream.listen(_handleUri);
   }
 
   Future<void> _handleUri(Uri uri) async {
-    final params = Uri.splitQueryString(uri.fragment);
-    if (params['type'] == 'recovery') {
-      try {
-        // Estabelece a sessão a partir do token do link antes de mostrar a tela
-        await _client.auth.getSessionFromUrl(uri);
-      } catch (_) {}
+    final fragmentParams = Uri.splitQueryString(uri.fragment);
+    final isRecovery = uri.queryParameters['type'] == 'recovery' ||
+        fragmentParams['type'] == 'recovery';
+
+    if (!isRecovery) return;
+
+    try {
+      await _client.auth.getSessionFromUrl(uri);
+    } catch (_) {}
+
+    if (_client.auth.currentSession != null) {
+      _session = _client.auth.currentSession;
       _isPasswordRecovery = true;
       notifyListeners();
     }
@@ -105,6 +109,32 @@ class AuthProvider with ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  Future<String?> sendPasswordReset(String login) async {
+    try {
+      final email = await _client
+          .rpc('get_email_by_login', params: {'p_login': login.trim()});
+
+      if (email == null || (email as String).isEmpty) {
+        return 'Login não encontrado.';
+      }
+
+      final domain = email.split('@').last.toLowerCase();
+      if (!_allowedDomains.contains(domain)) {
+        return 'Domínio de e-mail não autorizado.';
+      }
+
+      await _client.auth.resetPasswordForEmail(
+        email,
+        redirectTo: 'com.claro.moveltracker://login-callback/',
+      );
+      return null; // sucesso
+    } on AuthException catch (e) {
+      return 'Erro ao enviar e-mail: ${e.message}';
+    } catch (_) {
+      return 'Erro inesperado. Tente novamente.';
     }
   }
 
