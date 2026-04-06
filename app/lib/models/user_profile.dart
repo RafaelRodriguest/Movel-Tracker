@@ -17,11 +17,11 @@ class UserProfile {
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
-      id: json['id'] as String,
-      login: json['login'] as String,
-      nome: json['nome'] as String,
-      email: json['email'] as String,
-      role: json['role'] as String,
+      id: json['id']?.toString() ?? '',
+      login: json['login']?.toString() ?? '',
+      nome: json['nome']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      role: json['role']?.toString() ?? 'geral',
     );
   }
 }

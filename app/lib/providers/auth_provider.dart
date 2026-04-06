@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -11,6 +12,7 @@ class AuthProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   bool _isPasswordRecovery = false;
+  StreamSubscription<Uri>? _deepLinkSub;
 
   bool get isLoggedIn => _session != null;
   UserProfile? get profile => _profile;
@@ -56,7 +58,13 @@ class AuthProvider with ChangeNotifier {
       if (uri != null) _handleUri(uri);
     });
 
-    appLinks.uriLinkStream.listen(_handleUri);
+    _deepLinkSub = appLinks.uriLinkStream.listen(_handleUri);
+  }
+
+  @override
+  void dispose() {
+    _deepLinkSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _handleUri(Uri uri) async {
@@ -84,10 +92,11 @@ class AuthProvider with ChangeNotifier {
 
     try {
       // Busca o e-mail via RPC (bypassa RLS pois usuário ainda não está autenticado)
-      final email = await _client
+      final raw = await _client
           .rpc('get_email_by_login', params: {'p_login': login.trim()});
+      final email = raw?.toString() ?? '';
 
-      if (email == null || (email as String).isEmpty) {
+      if (email.isEmpty) {
         _error = 'Login não encontrado.';
         return;
       }
@@ -114,10 +123,11 @@ class AuthProvider with ChangeNotifier {
 
   Future<String?> sendPasswordReset(String login) async {
     try {
-      final email = await _client
+      final raw = await _client
           .rpc('get_email_by_login', params: {'p_login': login.trim()});
+      final email = raw?.toString() ?? '';
 
-      if (email == null || (email as String).isEmpty) {
+      if (email.isEmpty) {
         return 'Login não encontrado.';
       }
 
@@ -143,6 +153,8 @@ class AuthProvider with ChangeNotifier {
       await _client.auth.updateUser(UserAttributes(password: newPassword));
       _isPasswordRecovery = false;
       notifyListeners();
+      // Garante que o perfil esteja carregado ao ir para HomeScreen
+      await _loadProfile();
       return null; // sucesso
     } on AuthException catch (e) {
       return e.message;
@@ -155,6 +167,8 @@ class AuthProvider with ChangeNotifier {
     await _client.auth.signOut();
     _profile = null;
     _session = null;
+    _error = null;
+    _isPasswordRecovery = false;
     notifyListeners();
   }
 

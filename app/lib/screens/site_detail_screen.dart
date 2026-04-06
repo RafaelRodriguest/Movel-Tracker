@@ -52,22 +52,26 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
     if (picked == null) return;
 
     setState(() => _loadingSlots[index] = true);
+    String? uploadedUrl;
     try {
-      final url = await _cloudinaryService.upload(File(picked.path));
+      uploadedUrl = await _cloudinaryService.upload(File(picked.path));
       final isNew = _imageUrls[index] == null;
-      await _supabaseService.updateFoto(widget.site.siteId, index, url);
+      await _supabaseService.updateFoto(widget.site.siteId, index, uploadedUrl);
       await _supabaseService.insertAuditLog(
         siteId: widget.site.siteId,
         action: isNew ? 'foto_add' : 'foto_update',
-        detail: 'foto_${index + 1} → $url',
+        detail: 'foto_${index + 1} → $uploadedUrl',
       );
       final updated = List<String?>.from(_imageUrls);
-      updated[index] = url;
+      updated[index] = uploadedUrl;
       if (mounted) _syncUrls(updated);
     } catch (e) {
       if (mounted) {
+        final msg = uploadedUrl != null
+            ? 'Foto enviada mas não foi possível salvar. Tente novamente.'
+            : 'Falha no envio da foto. Verifique a conexão.';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
+          SnackBar(content: Text(msg)),
         );
       }
     } finally {
@@ -424,10 +428,6 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
                         _buildInfoCards(context),
                         const SizedBox(height: 24),
 
-                        // Tecnologias
-                        _buildTechnologiesCard(context),
-                        const SizedBox(height: 24),
-
                         // Seção de fotos (placeholder)
                         _buildPhotosSection(context),
                       ],
@@ -603,6 +603,29 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
             ),
           ],
         ),
+        const SizedBox(height: 12),
+
+        Row(
+          children: [
+            Expanded(
+              child: _buildInfoCard(
+                icon: Icons.bolt_outlined,
+                label: 'Consumo atual',
+                value: widget.site.consumoAtual ?? '—',
+                isCompact: true,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildInfoCard(
+                icon: Icons.vpn_key_outlined,
+                label: 'Padrão de chave',
+                value: widget.site.padraoChave ?? '—',
+                isCompact: true,
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -759,8 +782,9 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
   Widget _buildPhotoSlot(int index) {
     final url = _imageUrls.length > index ? _imageUrls[index] : null;
     final isLoading = _loadingSlots[index];
+    // watch garante rebuild quando o perfil terminar de carregar
     final isCellOwner =
-        context.read<AuthProvider>().profile?.isCellOwner ?? false;
+        context.watch<AuthProvider>().profile?.isCellOwner ?? false;
 
     return GestureDetector(
       onTap: isLoading
@@ -812,22 +836,23 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
                           color: AppColors.textSecondary,
                         ),
                       ),
-                      Positioned(
-                        top: 4,
-                        right: 4,
-                        child: Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: const BoxDecoration(
-                            color: Colors.black54,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.edit,
-                            size: 12,
-                            color: Colors.white,
+                      if (isCellOwner)
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: const BoxDecoration(
+                              color: Colors.black54,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.edit,
+                              size: 12,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
-                      ),
                     ],
                   )
                 : Column(

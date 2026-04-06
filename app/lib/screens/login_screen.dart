@@ -213,15 +213,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: AppColors.textLight,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Acesso restrito a colaboradores Claro e STTE',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
                 const SizedBox(height: 48),
 
                 // Campo login
