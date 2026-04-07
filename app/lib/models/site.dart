@@ -142,13 +142,24 @@ class Site {
   /// Formata coordenadas para exibição
   String get coordenadasFormatadas => '$latitude, $longitude';
 
-  /// Gera URL de navegação para Google Maps (usando esquema geo universal)
+  /// Verifica se as coordenadas são válidas (não são 0,0 nem foram zeradas por falha de parse)
+  bool get hasValidCoordinates => latitude != 0.0 || longitude != 0.0;
+
+  // Formata coordenadas com 6 casas decimais para evitar ruído de ponto flutuante nas URLs
+  String get latStr => latitude.toStringAsFixed(6);
+  String get lngStr => longitude.toStringAsFixed(6);
+
+  /// Intent do Google Maps para navegação turn-by-turn (abre diretamente o Maps no Android)
+  String get googleMapsNavIntent =>
+      'google.navigation:q=$latStr,$lngStr&mode=d';
+
+  /// Gera URL de navegação para Google Maps (fallback web)
   String get googleMapsNavigationUrl =>
-      'https://www.google.com/maps/dir/?api=1&destination=$latitude,$longitude&navigate=yes';
+      'https://www.google.com/maps/dir/?api=1&destination=$latStr,$lngStr&navigate=yes';
 
   /// Gera URL de visualização do mapa
   String get googleMapsViewUrl =>
-      'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
+      'https://www.google.com/maps/search/?api=1&query=$latStr,$lngStr';
 
   @override
   String toString() {

@@ -241,36 +241,42 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
   }
 
   Future<void> _launchGoogleMaps() async {
-    final uri = Uri.parse(widget.site.googleMapsNavigationUrl);
+    final site = widget.site;
+    // 1ª opção: intent nativo google.navigation: — abre navegação turn-by-turn direto no Maps
+    final navIntent = Uri.parse(site.googleMapsNavIntent);
     try {
-      final launched = await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
-      );
-      if (!launched) {
-        await launchUrl(
-          Uri.parse('geo:${widget.site.latitude},${widget.site.longitude}?q=${widget.site.latitude},${widget.site.longitude}'),
-          mode: LaunchMode.externalApplication,
-        );
-      }
-    } catch (e) {
-      await launchUrl(
-        Uri.parse('geo:${widget.site.latitude},${widget.site.longitude}'),
-        mode: LaunchMode.externalApplication,
-      );
-    }
+      final launched = await launchUrl(navIntent, mode: LaunchMode.externalApplication);
+      if (launched) return;
+    } catch (_) {}
+
+    // 2ª opção: geo: URI — abre o Maps na localização
+    final geoUri = Uri.parse('geo:${site.latStr},${site.lngStr}?q=${site.latStr},${site.lngStr}(${Uri.encodeComponent(site.nome)})');
+    try {
+      final launched = await launchUrl(geoUri, mode: LaunchMode.externalApplication);
+      if (launched) return;
+    } catch (_) {}
+
+    // 3ª opção: URL web como último fallback
+    await launchUrl(
+      Uri.parse(site.googleMapsNavigationUrl),
+      mode: LaunchMode.externalApplication,
+    );
   }
 
   Future<void> _launchGoogleMapsView() async {
-    final uri = Uri.parse(widget.site.googleMapsViewUrl);
+    final site = widget.site;
+    // 1ª opção: geo: URI com label do site
+    final geoUri = Uri.parse('geo:${site.latStr},${site.lngStr}?q=${site.latStr},${site.lngStr}(${Uri.encodeComponent(site.nome)})');
     try {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } catch (e) {
-      await launchUrl(
-        Uri.parse('geo:${widget.site.latitude},${widget.site.longitude}?q=${widget.site.latitude},${widget.site.longitude}'),
-        mode: LaunchMode.externalApplication,
-      );
-    }
+      final launched = await launchUrl(geoUri, mode: LaunchMode.externalApplication);
+      if (launched) return;
+    } catch (_) {}
+
+    // 2ª opção: URL web
+    await launchUrl(
+      Uri.parse(site.googleMapsViewUrl),
+      mode: LaunchMode.externalApplication,
+    );
   }
 
   @override
