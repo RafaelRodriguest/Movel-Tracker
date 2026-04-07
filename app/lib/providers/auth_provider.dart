@@ -12,6 +12,7 @@ class AuthProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   bool _isPasswordRecovery = false;
+  bool _isInitializing = true;
   StreamSubscription<Uri>? _deepLinkSub;
 
   bool get isLoggedIn => _session != null;
@@ -19,6 +20,7 @@ class AuthProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get isPasswordRecovery => _isPasswordRecovery;
+  bool get isInitializing => _isInitializing;
 
   static const _allowedDomains = ['claro.com.br', 'stte.com.br'];
 
@@ -26,7 +28,7 @@ class AuthProvider with ChangeNotifier {
     _session = _client.auth.currentSession;
     if (_session != null) _loadProfile();
 
-    _listenDeepLinks();
+    _initAsync();
 
     _client.auth.onAuthStateChange.listen((data) {
       _session = data.session;
@@ -51,14 +53,16 @@ class AuthProvider with ChangeNotifier {
 
   }
 
-  void _listenDeepLinks() {
+  Future<void> _initAsync() async {
     final appLinks = AppLinks();
 
-    appLinks.getInitialLink().then((uri) {
-      if (uri != null) _handleUri(uri);
-    });
+    final initialUri = await appLinks.getInitialLink();
+    if (initialUri != null) await _handleUri(initialUri);
 
     _deepLinkSub = appLinks.uriLinkStream.listen(_handleUri);
+
+    _isInitializing = false;
+    notifyListeners();
   }
 
   @override

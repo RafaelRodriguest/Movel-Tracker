@@ -99,8 +99,26 @@ class _AppEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    if (auth.isInitializing) return const _SplashScreen();
     if (auth.isPasswordRecovery) return const ResetPasswordScreen();
     if (auth.isLoggedIn) return const HomeScreen();
     return const LoginScreen();
+  }
+}
+
+class _SplashScreen extends StatelessWidget {
+  const _SplashScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: AppColors.backgroundLight,
+      body: Center(
+        child: CircularProgressIndicator(
+          color: AppColors.primary,
+          strokeWidth: 3,
+        ),
+      ),
+    );
   }
 }
