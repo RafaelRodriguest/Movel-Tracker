@@ -138,6 +138,15 @@ class SiteProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// Atualiza os campos operacionais de um site no estado local
+  void updateSiteFields(String siteId, Site updatedSite) {
+    final index = _allSites.indexWhere((s) => s.siteId == siteId);
+    if (index == -1) return;
+    _allSites[index] = updatedSite;
+    _applyFilters();
+    notifyListeners();
+  }
+
   /// Retorna um site específico por ID
   Site? getSiteById(String siteId) {
     return _repository.getSiteById(siteId);
