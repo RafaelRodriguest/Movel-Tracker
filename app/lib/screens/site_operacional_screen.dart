@@ -27,7 +27,7 @@ const _opcoesChave = [
 const _opcoesFonte = [
   'ELTEK 2500',
   'ELTEK FLATPACK 3000',
-  'EMERSO',
+  'EMERSON',
   'VERTIV',
   'DELTA DPR4000',
   'DELTA DP2900',

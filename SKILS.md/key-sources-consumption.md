@@ -81,7 +81,7 @@ Selecionar apenas um desse itens e salvar:
 
 - ELTEK 2500
 - ELTEK FLATPACK 3000
-- EMERSO
+- EMERSON
 - VERTIV
 - DELTA DPR4000
 - DELTA DP2900
@@ -91,7 +91,7 @@ Selecionar apenas um desse itens e salvar:
 
 - ELTEK 2500
 - ELTEK FLATPACK 3000
-- EMERSO
+- EMERSON
 - VERTIV
 - DELTA DPR4000
 - DELTA DP2900
