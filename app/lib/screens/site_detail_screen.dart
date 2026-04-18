@@ -26,6 +26,7 @@ class SiteDetailScreen extends StatefulWidget {
 
 class _SiteDetailScreenState extends State<SiteDetailScreen> {
   late List<String?> _imageUrls;
+  late Site _currentSite;
   final List<bool> _loadingSlots = List.filled(5, false);
   final _cloudinaryService = CloudinaryService();
   final _supabaseService = SupabaseService();
@@ -34,7 +35,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
   @override
   void initState() {
     super.initState();
-    // Usa o provider como fonte da verdade — já atualizado em cada operação
+    _currentSite = widget.site;
     _imageUrls = List.from(widget.site.imageUrls);
   }
 
@@ -618,7 +619,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
   }
 
   Widget _buildOperacionalCard(BuildContext context) {
-    final site = widget.site;
+    final site = _currentSite;
     final isCellOwner =
         context.watch<AuthProvider>().profile?.isCellOwner ?? false;
 
@@ -662,7 +663,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
               const SizedBox(width: 12),
               const Expanded(
                 child: Text(
-                  'Informações Operacionais',
+                  'Informações do Site',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -677,13 +678,12 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (_) =>
-                            SiteOperacionalScreen(site: widget.site),
+                            SiteOperacionalScreen(site: _currentSite),
                       ),
                     );
-                    // O SiteProvider já foi atualizado dentro da tela,
-                    // mas o widget.site é imutável — recarregamos a tela
-                    // via setState para refletir o novo estado do provider.
-                    if (updated != null && mounted) setState(() {});
+                    if (updated != null && mounted) {
+                      setState(() => _currentSite = updated);
+                    }
                   },
                   icon: const Icon(Icons.edit_outlined, size: 16),
                   label: const Text('Editar'),
@@ -726,7 +726,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
             Text(
               isCellOwner
                   ? 'Nenhuma informação registrada. Toque em Editar para preencher.'
-                  : 'Nenhuma informação operacional registrada.',
+                  : 'Nenhuma informação do site registrada.',
               style: TextStyle(
                 fontSize: 13,
                 color: AppColors.textSecondary,
