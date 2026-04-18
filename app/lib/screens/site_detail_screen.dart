@@ -619,7 +619,12 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
   }
 
   Widget _buildOperacionalCard(BuildContext context) {
-    final site = _currentSite;
+    // Lê diretamente do provider para reagir imediatamente a qualquer atualização
+    final allSites = context.watch<SiteProvider>().allSites;
+    final site = allSites.firstWhere(
+      (s) => s.siteId == widget.site.siteId,
+      orElse: () => _currentSite,
+    );
     final isCellOwner =
         context.watch<AuthProvider>().profile?.isCellOwner ?? false;
 
@@ -673,17 +678,14 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
               ),
               if (isCellOwner)
                 TextButton.icon(
-                  onPressed: () async {
-                    final updated = await Navigator.push<Site>(
+                  onPressed: () {
+                    Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) =>
-                            SiteOperacionalScreen(site: _currentSite),
+                            SiteOperacionalScreen(site: site),
                       ),
                     );
-                    if (updated != null && mounted) {
-                      setState(() => _currentSite = updated);
-                    }
                   },
                   icon: const Icon(Icons.edit_outlined, size: 16),
                   label: const Text('Editar'),
