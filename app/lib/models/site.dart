@@ -13,8 +13,21 @@ class Site {
   final List<String> tecnologias;
   final String status;
   final List<String?> imageUrls;
-  final String? consumoAtual;
-  final String? padraoChave;
+
+  // Campos operacionais — chaves
+  final String? chavePortao;
+  final String? chaveGradil01;
+  final String? chaveGradil02;
+
+  // Campos operacionais — fontes e consumo
+  final String? fonte01;
+  final String? fonte02;
+  final String? consumoFonte01;
+  final String? consumoFonte02;
+
+  // Campos operacionais — baterias
+  final String? bateriasFonte01;
+  final String? bateriasFonte02;
 
   Site({
     required this.siteId,
@@ -30,14 +43,20 @@ class Site {
     required this.tecnologias,
     this.status = 'Ativo',
     List<String?>? imageUrls,
-    this.consumoAtual,
-    this.padraoChave,
+    this.chavePortao,
+    this.chaveGradil01,
+    this.chaveGradil02,
+    this.fonte01,
+    this.fonte02,
+    this.consumoFonte01,
+    this.consumoFonte02,
+    this.bateriasFonte01,
+    this.bateriasFonte02,
   }) : imageUrls = imageUrls ?? List.filled(5, null);
 
   /// Cria um Site a partir de um mapa (JSON/CSV)
   factory Site.fromJson(Map<String, dynamic> json) {
     final statusValue = json['status']?.toString();
-    // Se status for null ou vazio, assume 'Ativo' como padrão
     final finalStatus = (statusValue == null || statusValue.isEmpty) ? 'Ativo' : statusValue;
 
     return Site(
@@ -60,8 +79,15 @@ class Site {
         json['foto_4'] as String?,
         json['foto_5'] as String?,
       ],
-      consumoAtual: json['consumo_atual']?.toString(),
-      padraoChave: json['padrao_chave']?.toString(),
+      chavePortao: json['chave_portao'] as String?,
+      chaveGradil01: json['chave_gradil_01'] as String?,
+      chaveGradil02: json['chave_gradil_02'] as String?,
+      fonte01: json['fonte_01'] as String?,
+      fonte02: json['fonte_02'] as String?,
+      consumoFonte01: json['consumo_fonte_01'] as String?,
+      consumoFonte02: json['consumo_fonte_02'] as String?,
+      bateriasFonte01: json['baterias_fonte_01'] as String?,
+      bateriasFonte02: json['baterias_fonte_02'] as String?,
     );
   }
 
@@ -85,10 +111,30 @@ class Site {
       'foto_3': imageUrls.length > 2 ? imageUrls[2] : null,
       'foto_4': imageUrls.length > 3 ? imageUrls[3] : null,
       'foto_5': imageUrls.length > 4 ? imageUrls[4] : null,
+      'chave_portao': chavePortao,
+      'chave_gradil_01': chaveGradil01,
+      'chave_gradil_02': chaveGradil02,
+      'fonte_01': fonte01,
+      'fonte_02': fonte02,
+      'consumo_fonte_01': consumoFonte01,
+      'consumo_fonte_02': consumoFonte02,
+      'baterias_fonte_01': bateriasFonte01,
+      'baterias_fonte_02': bateriasFonte02,
     };
   }
 
-  Site copyWith({List<String?>? imageUrls}) {
+  Site copyWith({
+    List<String?>? imageUrls,
+    String? chavePortao,
+    String? chaveGradil01,
+    String? chaveGradil02,
+    String? fonte01,
+    String? fonte02,
+    String? consumoFonte01,
+    String? consumoFonte02,
+    String? bateriasFonte01,
+    String? bateriasFonte02,
+  }) {
     return Site(
       siteId: siteId,
       sigla: sigla,
@@ -103,12 +149,19 @@ class Site {
       tecnologias: tecnologias,
       status: status,
       imageUrls: imageUrls ?? this.imageUrls,
-      consumoAtual: consumoAtual,
-      padraoChave: padraoChave,
+      chavePortao: chavePortao ?? this.chavePortao,
+      chaveGradil01: chaveGradil01 ?? this.chaveGradil01,
+      chaveGradil02: chaveGradil02 ?? this.chaveGradil02,
+      fonte01: fonte01 ?? this.fonte01,
+      fonte02: fonte02 ?? this.fonte02,
+      consumoFonte01: consumoFonte01 ?? this.consumoFonte01,
+      consumoFonte02: consumoFonte02 ?? this.consumoFonte02,
+      bateriasFonte01: bateriasFonte01 ?? this.bateriasFonte01,
+      bateriasFonte02: bateriasFonte02 ?? this.bateriasFonte02,
     );
   }
 
-  /// Retorna true se o site estiver ativo (para compatibilidade)
+  /// Retorna true se o site estiver ativo
   bool get ativo {
     final s = status.trim().toLowerCase();
     return s.isEmpty || s == 'ativo' || s == 'active' || s == 'enabled';
@@ -116,9 +169,7 @@ class Site {
 
   /// Parser de tecnologias (pode vir como string separada por vírgula)
   static List<String> _parseTecnologias(String? tecnologias) {
-    if (tecnologias == null || tecnologias.isEmpty) {
-      return [];
-    }
+    if (tecnologias == null || tecnologias.isEmpty) return [];
     return tecnologias
         .split(',')
         .map((t) => t.trim().toUpperCase())
@@ -142,29 +193,26 @@ class Site {
   /// Formata coordenadas para exibição
   String get coordenadasFormatadas => '$latitude, $longitude';
 
-  /// Verifica se as coordenadas são válidas (não são 0,0 nem foram zeradas por falha de parse)
+  /// Verifica se as coordenadas são válidas
   bool get hasValidCoordinates => latitude != 0.0 || longitude != 0.0;
 
-  // Formata coordenadas com 6 casas decimais para evitar ruído de ponto flutuante nas URLs
   String get latStr => latitude.toStringAsFixed(6);
   String get lngStr => longitude.toStringAsFixed(6);
 
-  /// Intent do Google Maps para navegação turn-by-turn (abre diretamente o Maps no Android)
+  /// Intent do Google Maps para navegação turn-by-turn
   String get googleMapsNavIntent =>
       'google.navigation:q=$latStr,$lngStr&mode=d';
 
-  /// Gera URL de navegação para Google Maps (fallback web)
+  /// URL de navegação para Google Maps (fallback web)
   String get googleMapsNavigationUrl =>
       'https://www.google.com/maps/dir/?api=1&destination=$latStr,$lngStr&navigate=yes';
 
-  /// Gera URL de visualização do mapa
+  /// URL de visualização do mapa
   String get googleMapsViewUrl =>
       'https://www.google.com/maps/search/?api=1&query=$latStr,$lngStr';
 
   @override
-  String toString() {
-    return 'Site(siteId: $siteId, nome: $nome, municipio: $municipio)';
-  }
+  String toString() => 'Site(siteId: $siteId, nome: $nome, municipio: $municipio)';
 
   @override
   bool operator ==(Object other) =>

@@ -12,6 +12,7 @@ import '../providers/site_provider.dart';
 import '../services/cloudinary_service.dart';
 import '../services/supabase_service.dart';
 import '../theme/app_colors.dart';
+import 'site_operacional_screen.dart';
 
 /// Tela de detalhes de um Site específico
 class SiteDetailScreen extends StatefulWidget {
@@ -611,28 +612,177 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
         ),
         const SizedBox(height: 12),
 
-        Row(
-          children: [
-            Expanded(
-              child: _buildInfoCard(
-                icon: Icons.bolt_outlined,
-                label: 'Consumo atual',
-                value: widget.site.consumoAtual ?? '—',
-                isCompact: true,
+        _buildOperacionalCard(context),
+      ],
+    );
+  }
+
+  Widget _buildOperacionalCard(BuildContext context) {
+    final site = widget.site;
+    final isCellOwner =
+        context.watch<AuthProvider>().profile?.isCellOwner ?? false;
+
+    // Verifica se há algum campo operacional preenchido
+    final temDados = [
+      site.chavePortao,
+      site.chaveGradil01,
+      site.chaveGradil02,
+      site.fonte01,
+      site.fonte02,
+      site.consumoFonte01,
+      site.consumoFonte02,
+      site.bateriasFonte01,
+      site.bateriasFonte02,
+    ].any((v) => v != null && v.isNotEmpty);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.primary.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.settings_outlined,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildInfoCard(
-                icon: Icons.vpn_key_outlined,
-                label: 'Padrão de chave',
-                value: widget.site.padraoChave ?? '—',
-                isCompact: true,
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Informações Operacionais',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textLight,
+                  ),
+                ),
+              ),
+              if (isCellOwner)
+                TextButton.icon(
+                  onPressed: () async {
+                    final updated = await Navigator.push<Site>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            SiteOperacionalScreen(site: widget.site),
+                      ),
+                    );
+                    // O SiteProvider já foi atualizado dentro da tela,
+                    // mas o widget.site é imutável — recarregamos a tela
+                    // via setState para refletir o novo estado do provider.
+                    if (updated != null && mounted) setState(() {});
+                  },
+                  icon: const Icon(Icons.edit_outlined, size: 16),
+                  label: const Text('Editar'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    textStyle: const TextStyle(fontSize: 12),
+                  ),
+                ),
+            ],
+          ),
+          if (temDados) ...[
+            const SizedBox(height: 16),
+            const Divider(height: 1),
+            const SizedBox(height: 12),
+            // Chaves
+            if (site.chavePortao != null || site.chaveGradil01 != null || site.chaveGradil02 != null) ...[
+              _buildOperacionalRow('Chave Portão', site.chavePortao),
+              _buildOperacionalRow('Chave Gradil 01', site.chaveGradil01),
+              _buildOperacionalRow('Chave Gradil 02', site.chaveGradil02),
+              const SizedBox(height: 8),
+            ],
+            // Gabinete 01
+            if (site.fonte01 != null || site.consumoFonte01 != null || site.bateriasFonte01 != null) ...[
+              _buildOperacionalSubtitle('Gabinete 01'),
+              _buildOperacionalRow('Fonte', site.fonte01),
+              _buildOperacionalRow('Consumo', site.consumoFonte01 != null ? '${site.consumoFonte01} A' : null),
+              _buildOperacionalRow('Baterias', site.bateriasFonte01),
+              const SizedBox(height: 8),
+            ],
+            // Gabinete 02
+            if (site.fonte02 != null || site.consumoFonte02 != null || site.bateriasFonte02 != null) ...[
+              _buildOperacionalSubtitle('Gabinete 02'),
+              _buildOperacionalRow('Fonte', site.fonte02),
+              _buildOperacionalRow('Consumo', site.consumoFonte02 != null ? '${site.consumoFonte02} A' : null),
+              _buildOperacionalRow('Baterias', site.bateriasFonte02),
+            ],
+          ] else ...[
+            const SizedBox(height: 12),
+            Text(
+              isCellOwner
+                  ? 'Nenhuma informação registrada. Toque em Editar para preencher.'
+                  : 'Nenhuma informação operacional registrada.',
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOperacionalSubtitle(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Text(
+        label.toUpperCase(),
+        style: const TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: AppColors.primary,
+          letterSpacing: 0.8,
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildOperacionalRow(String label, String? value) {
+    if (value == null || value.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 110,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textLight,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

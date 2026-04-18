@@ -40,6 +40,37 @@ class SupabaseService {
         .eq('site_id', siteId);
   }
 
+  Future<void> updateInformacoesOperacionais(
+    String siteId, {
+    String? chavePortao,
+    String? chaveGradil01,
+    String? chaveGradil02,
+    String? fonte01,
+    String? fonte02,
+    String? consumoFonte01,
+    String? consumoFonte02,
+    String? bateriasFonte01,
+    String? bateriasFonte02,
+  }) async {
+    await _client.from('sites').update({
+      'chave_portao': chavePortao,
+      'chave_gradil_01': chaveGradil01,
+      'chave_gradil_02': chaveGradil02,
+      'fonte_01': fonte01,
+      'fonte_02': fonte02,
+      'consumo_fonte_01': consumoFonte01,
+      'consumo_fonte_02': consumoFonte02,
+      'baterias_fonte_01': bateriasFonte01,
+      'baterias_fonte_02': bateriasFonte02,
+    }).eq('site_id', siteId);
+
+    await insertAuditLog(
+      siteId: siteId,
+      action: 'operacional_update',
+      detail: 'chaves/fontes/consumo/baterias atualizados',
+    );
+  }
+
   Future<void> insertAuditLog({
     required String siteId,
     required String action,
