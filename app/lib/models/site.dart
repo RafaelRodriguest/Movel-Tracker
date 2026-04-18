@@ -123,17 +123,20 @@ class Site {
     };
   }
 
+  // Sentinel: distingue "parâmetro não informado" de "null intencional" no copyWith
+  static const _omit = Object();
+
   Site copyWith({
     List<String?>? imageUrls,
-    String? chavePortao,
-    String? chaveGradil01,
-    String? chaveGradil02,
-    String? fonte01,
-    String? fonte02,
-    String? consumoFonte01,
-    String? consumoFonte02,
-    String? bateriasFonte01,
-    String? bateriasFonte02,
+    Object? chavePortao = _omit,
+    Object? chaveGradil01 = _omit,
+    Object? chaveGradil02 = _omit,
+    Object? fonte01 = _omit,
+    Object? fonte02 = _omit,
+    Object? consumoFonte01 = _omit,
+    Object? consumoFonte02 = _omit,
+    Object? bateriasFonte01 = _omit,
+    Object? bateriasFonte02 = _omit,
   }) {
     return Site(
       siteId: siteId,
@@ -149,15 +152,15 @@ class Site {
       tecnologias: tecnologias,
       status: status,
       imageUrls: imageUrls ?? this.imageUrls,
-      chavePortao: chavePortao ?? this.chavePortao,
-      chaveGradil01: chaveGradil01 ?? this.chaveGradil01,
-      chaveGradil02: chaveGradil02 ?? this.chaveGradil02,
-      fonte01: fonte01 ?? this.fonte01,
-      fonte02: fonte02 ?? this.fonte02,
-      consumoFonte01: consumoFonte01 ?? this.consumoFonte01,
-      consumoFonte02: consumoFonte02 ?? this.consumoFonte02,
-      bateriasFonte01: bateriasFonte01 ?? this.bateriasFonte01,
-      bateriasFonte02: bateriasFonte02 ?? this.bateriasFonte02,
+      chavePortao:     chavePortao     == _omit ? this.chavePortao     : chavePortao     as String?,
+      chaveGradil01:   chaveGradil01   == _omit ? this.chaveGradil01   : chaveGradil01   as String?,
+      chaveGradil02:   chaveGradil02   == _omit ? this.chaveGradil02   : chaveGradil02   as String?,
+      fonte01:         fonte01         == _omit ? this.fonte01         : fonte01         as String?,
+      fonte02:         fonte02         == _omit ? this.fonte02         : fonte02         as String?,
+      consumoFonte01:  consumoFonte01  == _omit ? this.consumoFonte01  : consumoFonte01  as String?,
+      consumoFonte02:  consumoFonte02  == _omit ? this.consumoFonte02  : consumoFonte02  as String?,
+      bateriasFonte01: bateriasFonte01 == _omit ? this.bateriasFonte01 : bateriasFonte01 as String?,
+      bateriasFonte02: bateriasFonte02 == _omit ? this.bateriasFonte02 : bateriasFonte02 as String?,
     );
   }
 
