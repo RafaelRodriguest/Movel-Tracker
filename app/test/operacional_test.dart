@@ -225,6 +225,48 @@ void main() {
       expect(copy.fonte01, original.fonte01);
       expect(copy.bateriasFonte01, original.bateriasFonte01);
     });
+
+    test('copyWith com null explícito limpa o campo — não mantém valor anterior', () {
+      final original = _siteBase(
+        chavePortao: 'MULTLOCK',
+        chaveGradil01: 'MA GDA',
+        fonte01: 'ELTEK 2500',
+        consumoFonte01: '600',
+        bateriasFonte01: '4',
+      );
+
+      // Simula o usuário limpando todos os campos na segunda edição
+      final cleared = original.copyWith(
+        chavePortao: null,
+        chaveGradil01: null,
+        fonte01: null,
+        consumoFonte01: null,
+        bateriasFonte01: null,
+      );
+
+      expect(cleared.chavePortao, isNull);
+      expect(cleared.chaveGradil01, isNull);
+      expect(cleared.fonte01, isNull);
+      expect(cleared.consumoFonte01, isNull);
+      expect(cleared.bateriasFonte01, isNull);
+      // Campos não tocados devem ser preservados
+      expect(cleared.siteId, original.siteId);
+    });
+
+    test('copyWith com null não afeta campos que não foram passados', () {
+      final original = _siteBase(
+        chavePortao: 'MULTLOCK',
+        fonte01: 'ELTEK 2500',
+        consumoFonte01: '600',
+      );
+
+      // Limpa apenas chavePortao — os outros devem ser preservados
+      final updated = original.copyWith(chavePortao: null);
+
+      expect(updated.chavePortao, isNull);
+      expect(updated.fonte01, 'ELTEK 2500');
+      expect(updated.consumoFonte01, '600');
+    });
   });
 
   // ─── Validação das opções dos dropdowns ──────────────────────────────────────
