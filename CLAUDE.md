@@ -32,22 +32,23 @@ lib/
 ├── config/
 │   └── env.dart                  # Credenciais: Supabase URL/anonKey, Cloudinary
 ├── models/
-│   ├── site.dart                 # Modelo Site (+ imageUrls, consumoAtual, padraoChave)
+│   ├── site.dart                 # Modelo Site (imutável, copyWith com sentinel)
 │   └── user_profile.dart         # Perfil do usuário (id, login, nome, email, role)
 ├── services/
-│   ├── supabase_service.dart     # CRUD sites/fotos + insertAuditLog
+│   ├── supabase_service.dart     # CRUD sites/fotos/operacional + insertAuditLog
 │   ├── cloudinary_service.dart   # Upload de imagem para Cloudinary
 │   └── data_service.dart         # Legado: Google Sheets CSV (fallback)
 ├── repositories/
 │   └── site_repository.dart      # Carrega do Supabase; fallback mock local
 ├── providers/
 │   ├── auth_provider.dart        # Sessão Supabase, login, logout, reset de senha
-│   └── site_provider.dart        # Lista/filtros de sites, atualiza imageUrls localmente
+│   └── site_provider.dart        # Lista/filtros de sites; updateSiteImageUrls, updateSiteFields
 ├── screens/
 │   ├── login_screen.dart         # Login com número de login + senha
 │   ├── reset_password_screen.dart # Redefinição de senha via deep link
 │   ├── home_screen.dart          # Lista, busca e filtro de sites
-│   └── site_detail_screen.dart   # Detalhes do site + gerenciamento de fotos
+│   ├── site_detail_screen.dart   # Detalhes do site + gerenciamento de fotos
+│   └── site_operacional_screen.dart # Edição de chaves, fontes, consumo e baterias
 └── theme/
     └── app_colors.dart           # Cores Claro: vermelho #EE1105, branco, cinza
 ```
@@ -63,7 +64,7 @@ SiteRepository.loadFromSupabase() — fallback: mock local
     ↓
 SiteProvider (estado + filtros)
     ↓
-HomeScreen / SiteDetailScreen
+HomeScreen / SiteDetailScreen / SiteOperacionalScreen
 ```
 
 ### Fluxo de Autenticação
@@ -91,6 +92,17 @@ SupabaseService.updateFoto(siteId, index, url)
 SiteProvider.updateSiteImageUrls(siteId, urls) — atualiza estado local
 ```
 
+### Fluxo de Edição Operacional
+
+```
+SiteOperacionalScreen (dropdowns + campos de texto)
+    ↓
+SupabaseService.updateInformacoesOperacionais(siteId, ...)
+    + insertAuditLog(siteId, action: 'operacional_update')
+    ↓
+SiteProvider.updateSiteFields(siteId, updatedSite) — atualiza estado local
+```
+
 ## 📊 Modelos de Dados
 
 ### Site (campos Supabase)
@@ -109,8 +121,13 @@ SiteProvider.updateSiteImageUrls(siteId, urls) — atualiza estado local
 | `tecnologias` | String | CSV separado por vírgula (`4G,5G`) |
 | `status` | String | `Ativo` ou `Desativado` |
 | `foto_1`–`foto_5` | String? | URLs de imagem no Cloudinary |
-| `consumo_atual` | String? | Consumo atual do site |
-| `padrao_chave` | String? | Padrão de chave do site |
+| `chave_portao` | String? | Chave do portão (dropdown fixo) |
+| `chave_gradil_01` / `chave_gradil_02` | String? | Chaves dos gradis |
+| `fonte_01` / `fonte_02` | String? | Modelo de fonte (dropdown fixo) |
+| `consumo_fonte_01` / `consumo_fonte_02` | String? | Consumo em texto livre |
+| `baterias_fonte_01` / `baterias_fonte_02` | String? | Quantidade de baterias (1–9) |
+
+As opções válidas de `chave_*` e `fonte_*` estão definidas como constantes em `site_operacional_screen.dart` e espelhadas em `operacional_test.dart`. Adicionar opções requer atualizar ambos os arquivos.
 
 ### Tabelas Supabase
 
@@ -120,10 +137,10 @@ SiteProvider.updateSiteImageUrls(siteId, urls) — atualiza estado local
 
 ### Perfis de Acesso
 
-| Role | Visualiza | Gerencia fotos |
-|------|:---------:|:--------------:|
-| `cell_owner` | ✅ | ✅ |
-| `geral` | ✅ | ❌ |
+| Role | Visualiza | Gerencia fotos | Edita operacional |
+|------|:---------:|:--------------:|:-----------------:|
+| `cell_owner` | ✅ | ✅ | ✅ |
+| `geral` | ✅ | ❌ | ❌ |
 
 Usuários são cadastrados **manualmente pelo admin** no Supabase Dashboard. Não há auto-cadastro no app. Somente domínios `@claro.com.br` e `@stte.com.br` são autorizados.
 
@@ -141,18 +158,50 @@ Execute sempre a partir do diretório `app/`:
 flutter pub get          # Instalar dependências
 flutter run              # Rodar no dispositivo/emulador
 flutter analyze          # Análise estática
-flutter test             # Todos os testes (apenas app/test/site_test.dart atualmente)
-flutter test test/site_test.dart  # Teste específico
+flutter test             # Todos os testes
+flutter test test/site_test.dart        # Testa Site.fromJson/toJson/ativo
+flutter test test/operacional_test.dart # Testa campos operacionais e sentinel copyWith
 flutter build apk --debug    # APK de debug
 flutter build apk --release  # APK de produção
 flutter pub run flutter_launcher_icons  # Regenerar ícone do app
 ```
+
+## Padrões de Código
+
+### Sentinel em `Site.copyWith`
+
+Os campos operacionais de `Site` usam um sentinel privado (`_omit`) em vez do padrão `T? param` do Dart. Isso permite distinguir "parâmetro não informado" (mantém valor atual) de "null explícito" (limpa o campo no banco):
+
+```dart
+// Preserva chavePortao atual — não passa o parâmetro
+site.copyWith(fonte01: 'ELTEK 2500');
+
+// Limpa chavePortao no banco — passa null explicitamente
+site.copyWith(chavePortao: null);
+```
+
+Ao adicionar novos campos nullable a `Site`, use `Object? campo = _omit` no `copyWith`, não `String? campo`.
+
+`copyWith` cobre apenas `imageUrls` e os campos operacionais. Os campos imutáveis do site (siteId, nome, sigla, lat/lng, etc.) não são parâmetros do `copyWith` — para alterá-los, construa um novo `Site(...)` diretamente.
+
+### `updateInformacoesOperacionais` envia todos os campos
+
+`SupabaseService.updateInformacoesOperacionais` sempre envia os 9 campos operacionais no UPDATE, mesmo que apenas um tenha mudado. Isso é intencional — evita lógica de diff e garante consistência. O RLS do Supabase bloqueia silenciosamente UPDATEs sem policy explícita para `cell_owner`.
+
+### `tecnologias` é normalizado para maiúsculas
+
+Durante o `fromJson`, `_parseTecnologias` aplica `.toUpperCase()` em cada item. Comparações devem usar `.toUpperCase()` ou `hasTecnologia()`.
+
+### `imageUrls` tem tamanho fixo 5
+
+`Site.imageUrls` é sempre uma lista de comprimento 5 (preenchida com `null`). Ao indexar, use `imageUrls[0]`–`imageUrls[4]` diretamente.
 
 ## 📂 Avisos Importantes
 
 - **`app/android/lib/`** — cópia redundante de `app/lib/`, ignorar. Trabalhe sempre em `app/lib/`.
 - **`data_service.dart`** — código legado do Google Sheets. A fonte ativa é o Supabase via `supabase_service.dart`.
 - **Deep link** de reset de senha: `com.claro.moveltracker://login-callback/`
+- **`SiteProvider.getSiteById`** delega ao `SiteRepository`, que não reflete atualizações feitas via `updateSiteFields`. Para buscar o estado vivo de um site, use `provider.allSites.firstWhere((s) => s.siteId == id)`.
 
 ## 🔗 Repositório Remoto
 

@@ -48,16 +48,18 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
   Future<void> _pickAndUpload(int index, {required bool fromCamera}) async {
     final picked = await _picker.pickImage(
       source: fromCamera ? ImageSource.camera : ImageSource.gallery,
-      imageQuality: 80,
-      maxWidth: 1080,
+      imageQuality: 65,
+      maxWidth: 800,
+      maxHeight: 800,
     );
     if (picked == null) return;
 
     setState(() => _loadingSlots[index] = true);
     String? uploadedUrl;
     try {
+      final oldUrl = _imageUrls[index];
+      final isNew = oldUrl == null;
       uploadedUrl = await _cloudinaryService.upload(File(picked.path));
-      final isNew = _imageUrls[index] == null;
       await _supabaseService.updateFoto(widget.site.siteId, index, uploadedUrl);
       await _supabaseService.insertAuditLog(
         siteId: widget.site.siteId,
@@ -67,6 +69,13 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
       final updated = List<String?>.from(_imageUrls);
       updated[index] = uploadedUrl;
       if (mounted) _syncUrls(updated);
+      // Limpeza do Cloudinary em background — não bloqueia a UI
+      if (!isNew) {
+        final publicId = CloudinaryService.extractPublicId(oldUrl);
+        if (publicId != null) {
+          _supabaseService.deleteCloudinaryImage(publicId).ignore();
+        }
+      }
     } catch (e) {
       if (mounted) {
         final msg = uploadedUrl != null
@@ -103,6 +112,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
 
     setState(() => _loadingSlots[index] = true);
     try {
+      final urlToDelete = _imageUrls[index];
       await _supabaseService.deleteFoto(widget.site.siteId, index);
       await _supabaseService.insertAuditLog(
         siteId: widget.site.siteId,
@@ -112,6 +122,11 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
       final updated = List<String?>.from(_imageUrls);
       updated[index] = null;
       if (mounted) _syncUrls(updated);
+      // Limpeza do Cloudinary em background — não bloqueia a UI
+      final publicId = CloudinaryService.extractPublicId(urlToDelete);
+      if (publicId != null) {
+        _supabaseService.deleteCloudinaryImage(publicId).ignore();
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -25,4 +25,21 @@ class CloudinaryService {
     final json = jsonDecode(body) as Map<String, dynamic>;
     return json['secure_url'] as String;
   }
+
+  /// Extrai o public_id de uma URL do Cloudinary.
+  /// Formato: https://res.cloudinary.com/{cloud}/image/upload/v{version}/{public_id}.{ext}
+  /// Retorna null se a URL não for do Cloudinary ou estiver malformada.
+  static String? extractPublicId(String? url) {
+    if (url == null || url.isEmpty) return null;
+    const uploadMarker = '/upload/';
+    final uploadIndex = url.indexOf(uploadMarker);
+    if (uploadIndex == -1) return null;
+    var path = url.substring(uploadIndex + uploadMarker.length);
+    // Remove version prefix (v1234567890/)
+    path = path.replaceFirst(RegExp(r'^v\d+/'), '');
+    // Remove file extension
+    final dotIndex = path.lastIndexOf('.');
+    if (dotIndex != -1) path = path.substring(0, dotIndex);
+    return path.isEmpty ? null : path;
+  }
 }

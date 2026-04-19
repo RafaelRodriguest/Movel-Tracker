@@ -71,6 +71,19 @@ class SupabaseService {
     );
   }
 
+  /// Chama a edge function para deletar a imagem do Cloudinary.
+  /// Operação best-effort: falhas são silenciadas para não bloquear o fluxo principal.
+  Future<void> deleteCloudinaryImage(String publicId) async {
+    try {
+      await _client.functions.invoke(
+        'delete-cloudinary-image',
+        body: {'public_id': publicId},
+      );
+    } catch (_) {
+      // Falha silenciosa — imagem órfã no Cloudinary é aceitável
+    }
+  }
+
   Future<void> insertAuditLog({
     required String siteId,
     required String action,
