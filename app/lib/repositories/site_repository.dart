@@ -1,4 +1,5 @@
 import '../models/site.dart';
+import '../services/cache_service.dart';
 import '../services/supabase_service.dart';
 
 /// Repositório de Sites
@@ -6,6 +7,7 @@ import '../services/supabase_service.dart';
 class SiteRepository {
   final List<Site> _sites = [];
   final SupabaseService _supabaseService = SupabaseService();
+  final CacheService _cache = CacheService();
 
   SiteRepository() {
     // Dados mock são carregados apenas como fallback
@@ -88,14 +90,23 @@ class SiteRepository {
     ]);
   }
 
-  /// Carrega sites do Supabase
-  /// Retorna a lista de sites carregados ou null se falhar
+  /// Carrega sites do cache local ou do Supabase (cache miss/expirado).
+  /// Retorna null se ambos falharem — SiteProvider faz fallback para mock.
   Future<List<Site>?> loadFromSupabase() async {
+    // 1. Cache hit: retorna sem tocar no Supabase
+    final cached = await _cache.loadSites();
+    if (cached != null) {
+      _sites.clear();
+      _sites.addAll(cached);
+      return cached;
+    }
+    // 2. Cache miss: busca no Supabase e persiste para próxima abertura
     try {
       final sites = await _supabaseService.fetchSites();
       if (sites.isNotEmpty) {
         _sites.clear();
         _sites.addAll(sites);
+        await _cache.saveSites(sites);
         return sites;
       }
       return null;
@@ -103,6 +114,9 @@ class SiteRepository {
       return null;
     }
   }
+
+  /// Invalida o cache — usado por refresh() e após escritas no Supabase.
+  Future<void> clearCache() => _cache.clear();
 
   /// Retorna todos os sites
   List<Site> getAllSites() => List.unmodifiable(_sites);

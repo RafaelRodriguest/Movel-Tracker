@@ -26,6 +26,21 @@ class CloudinaryService {
     return json['secure_url'] as String;
   }
 
+  /// URL otimizada para exibição em thumbnail (slots de foto 96×96 px).
+  static String thumbnailUrl(String url) =>
+      _withTransform(url, 'w_200,h_200,c_fill,q_auto,f_auto');
+
+  /// URL otimizada para visualização em tela cheia.
+  static String fullViewUrl(String url) =>
+      _withTransform(url, 'w_1200,q_auto,f_auto');
+
+  static String _withTransform(String url, String transform) {
+    const marker = '/upload/';
+    final i = url.indexOf(marker);
+    if (i == -1) return url;
+    return '${url.substring(0, i + marker.length)}$transform/${url.substring(i + marker.length)}';
+  }
+
   /// Extrai o public_id de uma URL do Cloudinary.
   /// Formato: https://res.cloudinary.com/{cloud}/image/upload/v{version}/{public_id}.{ext}
   /// Retorna null se a URL não for do Cloudinary ou estiver malformada.
@@ -35,6 +50,8 @@ class CloudinaryService {
     final uploadIndex = url.indexOf(uploadMarker);
     if (uploadIndex == -1) return null;
     var path = url.substring(uploadIndex + uploadMarker.length);
+    // Remove transformation prefix (e.g. w_200,h_200,c_fill,q_auto,f_auto/)
+    path = path.replaceFirst(RegExp(r'^[a-z]{1,3}_[^/]+(,[a-z]{1,3}_[^/]+)*/'), '');
     // Remove version prefix (v1234567890/)
     path = path.replaceFirst(RegExp(r'^v\d+/'), '');
     // Remove file extension

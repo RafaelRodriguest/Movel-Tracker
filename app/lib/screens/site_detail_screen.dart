@@ -230,7 +230,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
             Center(
               child: InteractiveViewer(
                 child: CachedNetworkImage(
-                  imageUrl: url,
+                  imageUrl: CloudinaryService.fullViewUrl(url),
                   fit: BoxFit.contain,
                   placeholder: (_, __) => const Center(
                     child: CircularProgressIndicator(color: Colors.white),
@@ -996,7 +996,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
                     fit: StackFit.expand,
                     children: [
                       CachedNetworkImage(
-                        imageUrl: url,
+                        imageUrl: CloudinaryService.thumbnailUrl(url),
                         fit: BoxFit.cover,
                         placeholder: (_, __) => const Center(
                           child: CircularProgressIndicator(
