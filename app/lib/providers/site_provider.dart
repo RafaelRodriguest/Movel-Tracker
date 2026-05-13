@@ -136,6 +136,8 @@ class SiteProvider with ChangeNotifier {
     _allSites[index] = _allSites[index].copyWith(imageUrls: urls);
     _applyFilters();
     notifyListeners();
+    // Invalida cache em background — próximo cold start buscará dados frescos
+    _repository.clearCache().ignore();
   }
 
   /// Atualiza os campos operacionais de um site no estado local
@@ -145,6 +147,8 @@ class SiteProvider with ChangeNotifier {
     _allSites[index] = updatedSite;
     _applyFilters();
     notifyListeners();
+    // Invalida cache em background — próximo cold start buscará dados frescos
+    _repository.clearCache().ignore();
   }
 
   /// Retorna um site específico por ID
@@ -152,8 +156,9 @@ class SiteProvider with ChangeNotifier {
     return _repository.getSiteById(siteId);
   }
 
-  /// Recarrega os dados
+  /// Recarrega os dados forçando re-fetch do Supabase (ignora cache)
   Future<void> refresh() async {
+    await _repository.clearCache();
     await _loadSites();
   }
 }
