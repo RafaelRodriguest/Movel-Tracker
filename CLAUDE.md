@@ -203,6 +203,45 @@ Durante o `fromJson`, `_parseTecnologias` aplica `.toUpperCase()` em cada item. 
 - **Deep link** de reset de senha: `com.claro.moveltracker://login-callback/`
 - **`SiteProvider.getSiteById`** delega ao `SiteRepository`, que não reflete atualizações feitas via `updateSiteFields`. Para buscar o estado vivo de um site, use `provider.allSites.firstWhere((s) => s.siteId == id)`.
 
+## 🌿 Workflow Git
+
+Branch base: `main` (produção). Nunca commitar diretamente nela.
+
+### Nomenclatura de branches
+
+| Prefixo | Quando usar | Exemplo |
+|---------|-------------|---------|
+| `feat/` | Nova funcionalidade | `feat/offline-mode` |
+| `fix/`  | Correção de bug | `fix/foto-upload-null` |
+| `chore/`| Infra, deps, docs, CI | `chore/update-supabase-sdk` |
+
+Sempre kebab-case, sem maiúsculas.
+
+### Fluxo
+
+```bash
+git checkout main && git pull          # partir do main atualizado
+git checkout -b feat/nome-da-feature   # criar branch
+
+# ... desenvolver, commitar ...
+
+git checkout main
+git merge --no-ff feat/nome-da-feature # merge sem fast-forward
+git push origin main
+git branch -d feat/nome-da-feature     # deletar branch local após merge
+```
+
+### Mensagens de commit
+
+Seguir Conventional Commits em português:
+
+```
+feat: adicionar filtro por município na home
+fix: corrigir upload de foto quando URL é null
+chore: remover gradle cache do rastreamento git
+test: cobrir casos edge do sentinel copyWith
+```
+
 ## 🔗 Repositório Remoto
 
 https://github.com/RafaelRodriguest/Movel-Tracker.git
