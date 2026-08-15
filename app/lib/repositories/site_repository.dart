@@ -2,6 +2,23 @@ import '../models/site.dart';
 import '../services/cache_service.dart';
 import '../services/supabase_service.dart';
 
+const _accents = <String, String>{
+  'Á': 'A', 'À': 'A', 'Â': 'A', 'Ã': 'A', 'Ä': 'A', 'Å': 'A',
+  'É': 'E', 'È': 'E', 'Ê': 'E', 'Ë': 'E',
+  'Í': 'I', 'Ì': 'I', 'Î': 'I', 'Ï': 'I',
+  'Ó': 'O', 'Ò': 'O', 'Ô': 'O', 'Õ': 'O', 'Ö': 'O', 'Ø': 'O',
+  'Ú': 'U', 'Ù': 'U', 'Û': 'U', 'Ü': 'U',
+  'Ç': 'C',
+  'á': 'a', 'à': 'a', 'â': 'a', 'ã': 'a', 'ä': 'a', 'å': 'a',
+  'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
+  'í': 'i', 'ì': 'i', 'î': 'i', 'ï': 'i',
+  'ó': 'o', 'ò': 'o', 'ô': 'o', 'õ': 'o', 'ö': 'o', 'ø': 'o',
+  'ú': 'u', 'ù': 'u', 'û': 'u', 'ü': 'u',
+  'ç': 'c',
+  'Ñ': 'N', 'ñ': 'n',
+  'Ý': 'Y', 'ý': 'y', 'ÿ': 'y',
+};
+
 /// Repositório de Sites
 /// Carrega dados do Supabase ou usa dados mock local como fallback
 class SiteRepository {
@@ -144,27 +161,9 @@ class SiteRepository {
     }).toList();
   }
 
-  /// Normaliza o texto removendo acentos e cedilha para busca
   String _normalizeText(String text) {
-    final accents = {
-      'Á': 'A', 'À': 'A', 'Â': 'A', 'Ã': 'A', 'Ä': 'A', 'Å': 'A',
-      'É': 'E', 'È': 'E', 'Ê': 'E', 'Ë': 'E',
-      'Í': 'I', 'Ì': 'I', 'Î': 'I', 'Ï': 'I',
-      'Ó': 'O', 'Ò': 'O', 'Ô': 'O', 'Õ': 'O', 'Ö': 'O', 'Ø': 'O',
-      'Ú': 'U', 'Ù': 'U', 'Û': 'U', 'Ü': 'U',
-      'Ç': 'C',
-      'á': 'a', 'à': 'a', 'â': 'a', 'ã': 'a', 'ä': 'a', 'å': 'a',
-      'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
-      'í': 'i', 'ì': 'i', 'î': 'i', 'ï': 'i',
-      'ó': 'o', 'ò': 'o', 'ô': 'o', 'õ': 'o', 'ö': 'o', 'ø': 'o',
-      'ú': 'u', 'ù': 'u', 'û': 'u', 'ü': 'u',
-      'ç': 'c',
-      'Ñ': 'N', 'ñ': 'n',
-      'Ý': 'Y', 'ý': 'y', 'ÿ': 'y',
-    };
-
     String result = text;
-    accents.forEach((accent, normal) {
+    _accents.forEach((accent, normal) {
       result = result.replaceAll(accent, normal);
     });
     return result.toLowerCase().trim();

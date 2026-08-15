@@ -1,6 +1,12 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/site.dart';
+
+List<Site> _parseSitesJson(String raw) {
+  final list = jsonDecode(raw) as List;
+  return list.map((e) => Site.fromJson(e as Map<String, dynamic>)).toList();
+}
 
 class CacheService {
   static const _keyData = 'sites_cache_v1';
@@ -18,10 +24,7 @@ class CacheService {
     final raw = prefs.getString(_keyData);
     if (raw == null) return null;
     try {
-      final list = jsonDecode(raw) as List;
-      return list
-          .map((e) => Site.fromJson(e as Map<String, dynamic>))
-          .toList();
+      return await compute(_parseSitesJson, raw);
     } catch (_) {
       // Cache corrompido — limpa e força re-fetch
       await clear();
