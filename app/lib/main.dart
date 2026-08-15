@@ -9,16 +9,41 @@ import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/reset_password_screen.dart';
 
-void main() async {
+Future<void> _initSupabase() => Supabase.initialize(
+      url: Env.supabaseUrl,
+      anonKey: Env.supabaseAnonKey,
+      authOptions: const FlutterAuthClientOptions(
+        authFlowType: AuthFlowType.implicit,
+      ),
+    );
+
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  await Supabase.initialize(
-    url: Env.supabaseUrl,
-    anonKey: Env.supabaseAnonKey,
-    authOptions: const FlutterAuthClientOptions(
-      authFlowType: AuthFlowType.implicit,
-    ),
-  );
-  runApp(const ClaroSitesApp());
+  // Inicia Supabase em paralelo com o primeiro frame (splash aparece imediatamente)
+  final supabaseFuture = _initSupabase();
+  runApp(AppBootstrap(supabaseFuture: supabaseFuture));
+}
+
+class AppBootstrap extends StatelessWidget {
+  const AppBootstrap({super.key, required this.supabaseFuture});
+
+  final Future<void> supabaseFuture;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<void>(
+      future: supabaseFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const MaterialApp(
+            debugShowCheckedModeBanner: false,
+            home: _SplashScreen(),
+          );
+        }
+        return const ClaroSitesApp();
+      },
+    );
+  }
 }
 
 class ClaroSitesApp extends StatelessWidget {
