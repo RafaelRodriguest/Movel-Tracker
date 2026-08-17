@@ -54,6 +54,21 @@ Site _siteMinimo() => Site(
       status: 'Desativado',
     );
 
+// Site de outro estado — usado nos testes de isolamento por UF
+Site _sitePara() => Site(
+      siteId: 'BEL001',
+      sigla: 'PABEL1',
+      nome: 'Belém Centro',
+      endereco: '',
+      municipio: 'Belém',
+      uf: 'PA',
+      tecnico: '',
+      latitude: -1.4558,
+      longitude: -48.4902,
+      detentora: 'ATC',
+      uc: '99887766',
+    );
+
 void main() {
   setUp(() {
     // Garante SharedPreferences limpo antes de cada teste
@@ -232,6 +247,70 @@ void main() {
 
       expect(loaded.status, 'Desativado');
       expect(loaded.ativo, isFalse);
+    });
+  });
+
+  // ─── Escopo por estado ───────────────────────────────────────────────────────
+
+  group('CacheService — escopo por estado', () {
+    test('uf é preservada no round-trip', () async {
+      final cache = CacheService();
+      await cache.saveSites('PA', [_sitePara()]);
+      final loaded = (await cache.loadSites('PA'))!.first;
+      expect(loaded.uf, 'PA');
+    });
+
+    test('cache de um estado não responde por outro', () async {
+      final cache = CacheService();
+      await cache.saveSites('MA', [_siteCompleto()]);
+
+      expect(await cache.loadSites('PA'), isNull);
+      expect(await cache.loadSites('AM'), isNull);
+    });
+
+    test('estados diferentes convivem sem se sobrescrever', () async {
+      final cache = CacheService();
+      await cache.saveSites('MA', [_siteCompleto()]);
+      await cache.saveSites('PA', [_sitePara()]);
+
+      expect((await cache.loadSites('MA'))!.single.siteId, 'SLZ001');
+      expect((await cache.loadSites('PA'))!.single.siteId, 'BEL001');
+    });
+
+    test('clear de um estado não afeta o outro', () async {
+      final cache = CacheService();
+      await cache.saveSites('MA', [_siteCompleto()]);
+      await cache.saveSites('PA', [_sitePara()]);
+
+      await cache.clear('MA');
+
+      expect(await cache.loadSites('MA'), isNull);
+      expect(await cache.loadSites('PA'), isNotNull);
+    });
+
+    test('expiração é independente por estado', () async {
+      final cache = CacheService();
+      await cache.saveSites('MA', [_siteCompleto()]);
+      await cache.saveSites('PA', [_sitePara()]);
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(
+        'sites_cache_ts_MA_v2',
+        DateTime.now().subtract(const Duration(hours: 2)).millisecondsSinceEpoch,
+      );
+
+      expect(await cache.loadSites('MA'), isNull);
+      expect(await cache.loadSites('PA'), isNotNull);
+    });
+
+    test('cache global v1 (pré-uf) é ignorado', () async {
+      // Formato antigo: chave sem UF e sem o campo `uf` nos registros
+      SharedPreferences.setMockInitialValues({
+        'sites_cache': '[{"site_id":"SLZ001","nome":"São Luís Centro"}]',
+        'sites_cache_ts': DateTime.now().millisecondsSinceEpoch,
+      });
+
+      expect(await CacheService().loadSites('MA'), isNull);
     });
   });
 
