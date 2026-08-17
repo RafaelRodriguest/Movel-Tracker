@@ -156,10 +156,16 @@ Arquivos: `app/lib/screens/site_operacional_screen.dart` + `app/test/operacional
 
 ## Progresso
 
-- [ ] Fase 1 — Banco (coluna `uf` + backfill)
-- [ ] Fase 2 — Model `Site`
-- [ ] Fase 3 — Camada de dados (fetch + cache por estado)
-- [ ] Fase 4 — `SiteProvider`
-- [ ] Fase 5 — Wiring da UI
-- [ ] Fase 6 — Opções operacionais por estado
-- [ ] Fase 7 — Testes e mock
+- [ ] Fase 1 — Banco (coluna `uf` + backfill) — **manual, no Dashboard**
+- [x] Fase 2 — Model `Site`
+- [x] Fase 3 — Camada de dados (fetch + cache por estado)
+- [x] Fase 4 — `SiteProvider`
+- [x] Fase 5 — Wiring da UI
+- [x] Fase 6 — Opções operacionais por estado
+- [x] Fase 7 — Testes e mock
+
+Ajuste não previsto no plano: `app/test/cache_service_test.dart` também acompanhou a
+nova assinatura por UF (chaves `sites_cache_MA_v2`).
+
+Pendente após a Fase 1: habilitar `disponivel: true` para PA/AM/RR/AP em
+`state_selection_screen.dart` e preencher `_opcoesChavePorUf` desses estados.

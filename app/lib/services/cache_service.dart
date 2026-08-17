@@ -9,46 +9,47 @@ List<Site> _parseSitesJson(String raw) {
 }
 
 class CacheService {
-  static const _keyData = 'sites_cache_v1';
-  static const _keyTimestamp = 'sites_cache_ts_v1';
+  // v2: cache escopado por estado. O bump invalida o cache global v1 (sem `uf`).
+  static String _keyData(String uf) => 'sites_cache_${uf}_v2';
+  static String _keyTimestamp(String uf) => 'sites_cache_ts_${uf}_v2';
   static const _ttl = Duration(minutes: 30);
 
-  /// Retorna lista de sites do cache se existir e não estiver expirado.
-  /// Retorna null se cache estiver vazio, expirado ou corrompido.
-  Future<List<Site>?> loadSites() async {
+  /// Retorna lista de sites do estado a partir do cache, se existir e não
+  /// estiver expirado. Retorna null se cache estiver vazio, expirado ou corrompido.
+  Future<List<Site>?> loadSites(String uf) async {
     final prefs = await SharedPreferences.getInstance();
-    final ts = prefs.getInt(_keyTimestamp);
+    final ts = prefs.getInt(_keyTimestamp(uf));
     if (ts == null) return null;
     final age = DateTime.now().millisecondsSinceEpoch - ts;
     if (age > _ttl.inMilliseconds) return null;
-    final raw = prefs.getString(_keyData);
+    final raw = prefs.getString(_keyData(uf));
     if (raw == null) return null;
     try {
       return await compute(_parseSitesJson, raw);
     } catch (_) {
       // Cache corrompido — limpa e força re-fetch
-      await clear();
+      await clear(uf);
       return null;
     }
   }
 
-  /// Persiste a lista de sites com timestamp atual.
-  Future<void> saveSites(List<Site> sites) async {
+  /// Persiste a lista de sites do estado com timestamp atual.
+  Future<void> saveSites(String uf, List<Site> sites) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
-      _keyData,
+      _keyData(uf),
       jsonEncode(sites.map((s) => s.toJson()).toList()),
     );
     await prefs.setInt(
-      _keyTimestamp,
+      _keyTimestamp(uf),
       DateTime.now().millisecondsSinceEpoch,
     );
   }
 
-  /// Invalida o cache — próxima abertura buscará do Supabase.
-  Future<void> clear() async {
+  /// Invalida o cache do estado — próxima abertura buscará do Supabase.
+  Future<void> clear(String uf) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_keyData);
-    await prefs.remove(_keyTimestamp);
+    await prefs.remove(_keyData(uf));
+    await prefs.remove(_keyTimestamp(uf));
   }
 }

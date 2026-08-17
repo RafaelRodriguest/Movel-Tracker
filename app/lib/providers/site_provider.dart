@@ -30,6 +30,7 @@ class SiteProvider with ChangeNotifier {
   String _searchQuery = '';
   String _selectedMunicipio = 'Todos';
   bool _isLoading = false;
+  String? _selectedUf;
 
   // Getters
   List<Site> get filteredSites => _filteredSites;
@@ -38,35 +39,57 @@ class SiteProvider with ChangeNotifier {
   String get selectedMunicipio => _selectedMunicipio;
   bool get isLoading => _isLoading;
 
+  /// Estado (UF) atualmente carregado — null antes da seleção.
+  String? get selectedUf => _selectedUf;
+
   // Lista de municípios disponíveis (com opção "Todos")
   List<String> get municipios => ['Todos', ..._repository.getMunicipios()];
 
   // Contagem de sites encontrados
   int get siteCount => _filteredSites.length;
 
-  SiteProvider() {
-    // Defer para após o primeiro frame — evita skipped frames na inicialização
-    Future.microtask(_loadSites);
+  /// Seleciona o estado e carrega seus sites.
+  /// Chamado pela tela de seleção de UF — não há carga automática no construtor,
+  /// pois até a escolha do estado não se sabe o que buscar.
+  Future<void> selectUf(String uf) async {
+    final mudouUf = _selectedUf != uf;
+    _selectedUf = uf;
+    _searchQuery = '';
+    _selectedMunicipio = 'Todos';
+
+    // Mesmo estado já carregado: só limpa os filtros, sem novo fetch
+    if (!mudouUf && _allSites.isNotEmpty) {
+      _filteredSites = List.from(_allSites);
+      notifyListeners();
+      return;
+    }
+
+    _allSites = [];
+    _filteredSites = [];
+    await _loadSites();
   }
 
-  /// Carrega os sites inicialmente
+  /// Carrega os sites do estado selecionado
   Future<void> _loadSites() async {
+    final uf = _selectedUf;
+    if (uf == null) return;
+
     _isLoading = true;
     notifyListeners();
 
     try {
-      // Tenta carregar do Supabase
-      final sheetsSites = await _repository.loadFromSupabase();
+      // Tenta carregar do cache/Supabase
+      final sites = await _repository.loadFromSupabase(uf);
 
-      if (sheetsSites != null && sheetsSites.isNotEmpty) {
-        _allSites = sheetsSites;
+      if (sites != null && sites.isNotEmpty) {
+        _allSites = sites;
       } else {
-        // Fallback para dados mock locais
-        _allSites = _repository.getAllSites();
+        // Fallback para dados mock locais do estado
+        _allSites = _repository.loadMockData(uf);
       }
     } catch (e) {
       // Em caso de erro, usa dados mock
-      _allSites = _repository.getAllSites();
+      _allSites = _repository.loadMockData(uf);
     }
 
     _filteredSites = List.from(_allSites);
@@ -136,7 +159,8 @@ class SiteProvider with ChangeNotifier {
     _applyFilters();
     notifyListeners();
     // Invalida cache em background — próximo cold start buscará dados frescos
-    _repository.clearCache().ignore();
+    final uf = _selectedUf;
+    if (uf != null) _repository.clearCache(uf).ignore();
   }
 
   /// Atualiza os campos operacionais de um site no estado local
@@ -147,7 +171,8 @@ class SiteProvider with ChangeNotifier {
     _applyFilters();
     notifyListeners();
     // Invalida cache em background — próximo cold start buscará dados frescos
-    _repository.clearCache().ignore();
+    final uf = _selectedUf;
+    if (uf != null) _repository.clearCache(uf).ignore();
   }
 
   /// Retorna um site específico por ID
@@ -157,7 +182,9 @@ class SiteProvider with ChangeNotifier {
 
   /// Recarrega os dados forçando re-fetch do Supabase (ignora cache)
   Future<void> refresh() async {
-    await _repository.clearCache();
+    final uf = _selectedUf;
+    if (uf == null) return;
+    await _repository.clearCache(uf);
     await _loadSites();
   }
 }

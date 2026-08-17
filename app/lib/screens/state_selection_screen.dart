@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/site_provider.dart';
 import '../theme/app_colors.dart';
 import 'home_screen.dart';
 
@@ -166,9 +167,14 @@ class _UFCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         onTap: () {
           if (uf.disponivel) {
+            // Dispara a carga do estado antes de navegar — a HomeScreen
+            // já abre com o spinner do provider.
+            context.read<SiteProvider>().selectUf(uf.sigla);
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const HomeScreen()),
+              MaterialPageRoute(
+                builder: (_) => HomeScreen(uf: uf.sigla, nomeEstado: uf.nome),
+              ),
             );
           } else {
             ScaffoldMessenger.of(context).showSnackBar(

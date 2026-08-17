@@ -7,9 +7,15 @@ import '../providers/site_provider.dart';
 import '../theme/app_colors.dart';
 import 'site_detail_screen.dart';
 
-/// Tela principal com lista de sites
+/// Tela principal com lista de sites do estado selecionado
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  /// Sigla do estado exibido (ex: `MA`)
+  final String uf;
+
+  /// Nome por extenso do estado, exibido no header (ex: `Maranhão`)
+  final String nomeEstado;
+
+  const HomeScreen({super.key, required this.uf, required this.nomeEstado});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -58,13 +64,27 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
-                  child: Text(
-                    'Movel Tracker',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Movel Tracker',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        widget.nomeEstado,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -347,7 +367,9 @@ class _SiteCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              '${site.municipio}, MA',
+                              site.uf.isEmpty
+                                  ? site.municipio
+                                  : '${site.municipio}, ${site.uf}',
                               style: const TextStyle(
                                 fontSize: 13,
                                 color: AppColors.textSecondary,

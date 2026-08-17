@@ -5,6 +5,8 @@ class Site {
   final String nome;
   final String endereco;
   final String municipio;
+  /// Sigla do estado (UF) — 'MA' | 'PA' | 'AM' | 'RR' | 'AP'. Escopa os dados por estado.
+  final String uf;
   final String tecnico;
   final double latitude;
   final double longitude;
@@ -35,6 +37,7 @@ class Site {
     required this.nome,
     required this.endereco,
     required this.municipio,
+    required this.uf,
     required this.tecnico,
     required this.latitude,
     required this.longitude,
@@ -65,6 +68,8 @@ class Site {
       nome: json['nome'] ?? '',
       endereco: json['endereco'] ?? '',
       municipio: json['municipio'] ?? '',
+      // Tolerante a linhas antigas (pré-coluna uf) e a cache v1 sem o campo
+      uf: json['uf']?.toString().toUpperCase() ?? '',
       tecnico: json['tecnico'] ?? '',
       latitude: _parseCoordinate(json['latitude']),
       longitude: _parseCoordinate(json['longitude']),
@@ -99,6 +104,7 @@ class Site {
       'nome': nome,
       'endereco': endereco,
       'municipio': municipio,
+      'uf': uf,
       'tecnico': tecnico,
       'latitude': latitude,
       'longitude': longitude,
@@ -144,6 +150,7 @@ class Site {
       nome: nome,
       endereco: endereco,
       municipio: municipio,
+      uf: uf,
       tecnico: tecnico,
       latitude: latitude,
       longitude: longitude,

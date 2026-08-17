@@ -10,6 +10,7 @@ void main() {
         'nome': 'São Luís Centro',
         'endereco': 'Av. Dom Pedro II',
         'municipio': 'São Luís',
+        'uf': 'MA',
         'tecnico': 'João',
         'latitude': -2.508704,
         'longitude': -44.302,
@@ -23,6 +24,7 @@ void main() {
       expect(site.longitude, -44.302);
       expect(site.uc, '12345678');
       expect(site.tecnologias, ['4G', '5G']);
+      expect(site.uf, 'MA');
       expect(site.ativo, true);
     });
 
@@ -68,6 +70,34 @@ void main() {
 
       expect(site.googleMapsNavigationUrl, contains('-2.508704'));
       expect(site.googleMapsNavigationUrl, contains('-44.302'));
+    });
+  });
+
+  group('Site.uf', () {
+    Map<String, dynamic> base(Map<String, dynamic> extra) => {
+          'site_id': 'X', 'sigla': '', 'nome': '', 'endereco': '',
+          'municipio': '', 'tecnico': '', 'latitude': 0.0, 'longitude': 0.0,
+          'detentora': '', 'uc': '', 'tecnologias': '', 'status': 'Ativo',
+          ...extra,
+        };
+
+    test('linha antiga sem coluna uf vira string vazia', () {
+      expect(Site.fromJson(base({})).uf, '');
+    });
+
+    test('uf é normalizado para maiúsculas', () {
+      expect(Site.fromJson(base({'uf': 'pa'})).uf, 'PA');
+    });
+
+    test('uf sobrevive ao round-trip fromJson → toJson', () {
+      final json = Site.fromJson(base({'uf': 'AM'})).toJson();
+      expect(json['uf'], 'AM');
+      expect(Site.fromJson(json).uf, 'AM');
+    });
+
+    test('copyWith preserva a uf', () {
+      final site = Site.fromJson(base({'uf': 'RR'}));
+      expect(site.copyWith(fonte01: 'VERTIV').uf, 'RR');
     });
   });
 }
