@@ -20,7 +20,6 @@ Site _siteCompleto() => Site(
       longitude: -44.302000,
       detentora: 'ATC',
       uc: '12345678',
-      tecnologias: ['4G', '5G', 'IOT'],
       status: 'Ativo',
       imageUrls: [
         'https://res.cloudinary.com/demo/image/upload/v123/foto1.jpg',
@@ -52,7 +51,6 @@ Site _siteMinimo() => Site(
       longitude: -47.4833,
       detentora: '',
       uc: '',
-      tecnologias: [],
       status: 'Desativado',
     );
 
@@ -177,14 +175,6 @@ void main() {
 
       expect(loaded.latitude, original.latitude);
       expect(loaded.longitude, original.longitude);
-    });
-
-    test('tecnologias são preservadas no round-trip', () async {
-      final cache = CacheService();
-      await cache.saveSites(_uf, [_siteCompleto()]);
-      final loaded = (await cache.loadSites(_uf))!.first;
-
-      expect(loaded.tecnologias, ['4G', '5G', 'IOT']);
     });
 
     test('imageUrls com URLs e nulls são preservadas no round-trip', () async {

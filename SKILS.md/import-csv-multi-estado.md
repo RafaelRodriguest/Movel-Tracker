@@ -15,11 +15,9 @@ A `uf` é a **coluna B** da planilha. A posição não importa para o importador
 Supabase (ele casa pelo **nome do cabeçalho**), mas o cabeçalho precisa ser
 exatamente `uf`, minúsculo.
 
-Uma ausência em relação à tabela `sites`, tolerada pelo app:
-
-| Coluna | Situação |
-|--------|----------|
-| `tecnologias` | Não existe no CSV — fica `null`; `Site.fromJson` converte para lista vazia |
+O CSV cobre todas as colunas cadastrais da tabela `sites`. (A antiga
+`tecnologias`, que também não vinha na planilha, foi removida do app e do banco
+em 2026-08-17 — não precisa mais ser considerada aqui.)
 
 ---
 
@@ -246,6 +244,6 @@ MA tem lista própria; os demais caem em `_opcoesChaveBase`) — espelhando em
   estado, `geral` só lê. Nada muda com a coluna `uf`.
 - **Cache:** o app usa `sites_cache_<UF>_v2`. O bump de versão já invalida o cache
   global antigo, então nenhum aparelho vai abrir com dados pré-`uf`.
-- **`tecnologias` vazio:** os sites importados não exibirão chips de tecnologia até
-  a coluna ser preenchida. Para carregar depois, um `update ... from` com um
-  segundo CSV resolve.
+- **`tecnologias` removida:** o campo saiu do `Site`, da tela de detalhe e da
+  tabela `sites` em 2026-08-17. O card que exibia os chips já estava morto (nunca
+  era chamado), então nada mudou visualmente.

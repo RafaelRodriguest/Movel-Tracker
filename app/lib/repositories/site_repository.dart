@@ -50,7 +50,6 @@ class SiteRepository {
         longitude: -44.3028,
         detentora: 'ATC',
         uc: '12345678',
-        tecnologias: ['4G', '5G', 'IOT'],
         status: 'Ativo',
       ),
       Site(
@@ -65,7 +64,6 @@ class SiteRepository {
         longitude: -47.4833,
         detentora: 'ATC',
         uc: '87654321',
-        tecnologias: ['4G'],
         status: 'Ativo',
       ),
       Site(
@@ -80,7 +78,6 @@ class SiteRepository {
         longitude: -43.3500,
         detentora: 'ATC',
         uc: '54321678',
-        tecnologias: ['4G', '5G'],
         status: 'Desativado',
       ),
       Site(
@@ -95,7 +92,6 @@ class SiteRepository {
         longitude: -44.2650,
         detentora: 'AMX',
         uc: '98765432',
-        tecnologias: ['4G', '5G'],
         status: 'Ativo',
       ),
       Site(
@@ -110,7 +106,6 @@ class SiteRepository {
         longitude: -44.2650,
         detentora: 'ATC',
         uc: '13579246',
-        tecnologias: ['4G'],
         status: 'Ativo',
       ),
     ],
@@ -191,10 +186,5 @@ class SiteRepository {
     } catch (_) {
       return null;
     }
-  }
-
-  /// Filtra por tecnologia
-  List<Site> filterByTecnologia(String tecnologia) {
-    return _sites.where((s) => s.hasTecnologia(tecnologia)).toList();
   }
 }

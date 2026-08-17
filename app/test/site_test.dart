@@ -16,14 +16,12 @@ void main() {
         'longitude': -44.302,
         'detentora': 'ATC',
         'uc': '12345678',
-        'tecnologias': '4G,5G',
         'status': 'Ativo',
       });
 
       expect(site.latitude, -2.508704);
       expect(site.longitude, -44.302);
       expect(site.uc, '12345678');
-      expect(site.tecnologias, ['4G', '5G']);
       expect(site.uf, 'MA');
       expect(site.ativo, true);
     });
@@ -40,7 +38,6 @@ void main() {
         'longitude': '-47,4833',
         'detentora': '',
         'uc': '',
-        'tecnologias': '',
         'status': '',
       });
 
@@ -54,7 +51,7 @@ void main() {
         'site_id': 'X',
         'sigla': '', 'nome': '', 'endereco': '', 'municipio': '',
         'tecnico': '', 'latitude': 0.0, 'longitude': 0.0,
-        'detentora': '', 'uc': '', 'tecnologias': '', 'status': 'Desativado',
+        'detentora': '', 'uc': '','status': 'Desativado',
       });
 
       expect(site.ativo, false);
@@ -65,7 +62,7 @@ void main() {
         'site_id': 'X', 'sigla': '', 'nome': '', 'endereco': '',
         'municipio': '', 'tecnico': '',
         'latitude': -2.508704, 'longitude': -44.302,
-        'detentora': '', 'uc': '', 'tecnologias': '', 'status': 'Ativo',
+        'detentora': '', 'uc': '','status': 'Ativo',
       });
 
       expect(site.googleMapsNavigationUrl, contains('-2.508704'));
@@ -77,7 +74,7 @@ void main() {
     Map<String, dynamic> base(Map<String, dynamic> extra) => {
           'site_id': 'X', 'sigla': '', 'nome': '', 'endereco': '',
           'municipio': '', 'tecnico': '', 'latitude': 0.0, 'longitude': 0.0,
-          'detentora': '', 'uc': '', 'tecnologias': '', 'status': 'Ativo',
+          'detentora': '', 'uc': '','status': 'Ativo',
           ...extra,
         };
 

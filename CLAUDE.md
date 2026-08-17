@@ -118,7 +118,6 @@ SiteProvider.updateSiteFields(siteId, updatedSite) — atualiza estado local
 | `latitude` / `longitude` | double | Coordenadas |
 | `detentora` | String | Proprietário da torre |
 | `uc` | String | Unidade Consumidora |
-| `tecnologias` | String | CSV separado por vírgula (`4G,5G`) |
 | `status` | String | `Ativo` ou `Desativado` |
 | `foto_1`–`foto_5` | String? | URLs de imagem no Cloudinary |
 | `chave_portao` | String? | Chave do portão (dropdown fixo) |
@@ -187,10 +186,6 @@ Ao adicionar novos campos nullable a `Site`, use `Object? campo = _omit` no `cop
 ### `updateInformacoesOperacionais` envia todos os campos
 
 `SupabaseService.updateInformacoesOperacionais` sempre envia os 9 campos operacionais no UPDATE, mesmo que apenas um tenha mudado. Isso é intencional — evita lógica de diff e garante consistência. O RLS do Supabase bloqueia silenciosamente UPDATEs sem policy explícita para `cell_owner`.
-
-### `tecnologias` é normalizado para maiúsculas
-
-Durante o `fromJson`, `_parseTecnologias` aplica `.toUpperCase()` em cada item. Comparações devem usar `.toUpperCase()` ou `hasTecnologia()`.
 
 ### `imageUrls` tem tamanho fixo 5
 
