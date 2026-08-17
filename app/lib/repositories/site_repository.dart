@@ -26,26 +26,30 @@ class SiteRepository {
   final SupabaseService _supabaseService = SupabaseService();
   final CacheService _cache = CacheService();
 
-  SiteRepository() {
-    // Dados mock são carregados apenas como fallback
-    _loadMockData();
+  /// Carrega os sites mock do estado em `_sites` (fallback quando cache e
+  /// Supabase falham). Estados sem mock cadastrado ficam com lista vazia.
+  List<Site> loadMockData(String uf) {
+    _sites
+      ..clear()
+      ..addAll(_mockPorUf[uf] ?? const <Site>[]);
+    return getAllSites();
   }
 
-  /// Carrega dados mock para testes (usado como fallback)
-  void _loadMockData() {
-    _sites.addAll([
+  /// Dados mock por estado — hoje só o Maranhão tem sites de exemplo.
+  static final Map<String, List<Site>> _mockPorUf = {
+    'MA': [
       Site(
         siteId: 'SLZ001',
         sigla: 'MASLS7',
         nome: 'São Luís Centro',
         endereco: 'Av. Dom Pedro II, Centro, São Luís - MA',
         municipio: 'São Luís',
+        uf: 'MA',
         tecnico: 'João Silva',
         latitude: -2.5297,
         longitude: -44.3028,
         detentora: 'ATC',
         uc: '12345678',
-        tecnologias: ['4G', '5G', 'IOT'],
         status: 'Ativo',
       ),
       Site(
@@ -54,12 +58,12 @@ class SiteRepository {
         nome: 'Imperatriz Matriz',
         endereco: 'Av. Getúlio Vargas, Centro, Imperatriz - MA',
         municipio: 'Imperatriz',
+        uf: 'MA',
         tecnico: 'Maria Santos',
         latitude: -5.5200,
         longitude: -47.4833,
         detentora: 'ATC',
         uc: '87654321',
-        tecnologias: ['4G'],
         status: 'Ativo',
       ),
       Site(
@@ -68,12 +72,12 @@ class SiteRepository {
         nome: 'Caxias Norte',
         endereco: 'Rua Monsenhor Soares, Centro, Caxias - MA',
         municipio: 'Caxias',
+        uf: 'MA',
         tecnico: 'Pedro Costa',
         latitude: -4.8500,
         longitude: -43.3500,
         detentora: 'ATC',
         uc: '54321678',
-        tecnologias: ['4G', '5G'],
         status: 'Desativado',
       ),
       Site(
@@ -82,12 +86,12 @@ class SiteRepository {
         nome: 'São Luís Bacanga',
         endereco: 'Av. dos Franceses, Bacanga, São Luís - MA',
         municipio: 'São Luís',
+        uf: 'MA',
         tecnico: 'Ana Oliveira',
         latitude: -2.5550,
         longitude: -44.2650,
         detentora: 'AMX',
         uc: '98765432',
-        tecnologias: ['4G', '5G'],
         status: 'Ativo',
       ),
       Site(
@@ -96,22 +100,22 @@ class SiteRepository {
         nome: 'São José de Ribamar Centro',
         endereco: 'Rua da Matriz, Centro, São José de Ribamar - MA',
         municipio: 'São José de Ribamar',
+        uf: 'MA',
         tecnico: 'Carlos Lima',
         latitude: -2.5400,
         longitude: -44.2650,
         detentora: 'ATC',
         uc: '13579246',
-        tecnologias: ['4G'],
         status: 'Ativo',
       ),
-    ]);
-  }
+    ],
+  };
 
   /// Carrega sites do cache local ou do Supabase (cache miss/expirado).
   /// Retorna null se ambos falharem — SiteProvider faz fallback para mock.
-  Future<List<Site>?> loadFromSupabase() async {
+  Future<List<Site>?> loadFromSupabase(String uf) async {
     // 1. Cache hit: retorna sem tocar no Supabase
-    final cached = await _cache.loadSites();
+    final cached = await _cache.loadSites(uf);
     if (cached != null) {
       _sites.clear();
       _sites.addAll(cached);
@@ -119,11 +123,11 @@ class SiteRepository {
     }
     // 2. Cache miss: busca no Supabase e persiste para próxima abertura
     try {
-      final sites = await _supabaseService.fetchSites();
+      final sites = await _supabaseService.fetchSites(uf: uf);
       if (sites.isNotEmpty) {
         _sites.clear();
         _sites.addAll(sites);
-        await _cache.saveSites(sites);
+        await _cache.saveSites(uf, sites);
         return sites;
       }
       return null;
@@ -132,8 +136,8 @@ class SiteRepository {
     }
   }
 
-  /// Invalida o cache — usado por refresh() e após escritas no Supabase.
-  Future<void> clearCache() => _cache.clear();
+  /// Invalida o cache do estado — usado por refresh() e após escritas no Supabase.
+  Future<void> clearCache(String uf) => _cache.clear(uf);
 
   /// Retorna todos os sites
   List<Site> getAllSites() => List.unmodifiable(_sites);
@@ -182,10 +186,5 @@ class SiteRepository {
     } catch (_) {
       return null;
     }
-  }
-
-  /// Filtra por tecnologia
-  List<Site> filterByTecnologia(String tecnologia) {
-    return _sites.where((s) => s.hasTecnologia(tecnologia)).toList();
   }
 }

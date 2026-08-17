@@ -5,12 +5,13 @@ class Site {
   final String nome;
   final String endereco;
   final String municipio;
+  /// Sigla do estado (UF) — 'MA' | 'PA' | 'AM' | 'RR' | 'AP'. Escopa os dados por estado.
+  final String uf;
   final String tecnico;
   final double latitude;
   final double longitude;
   final String detentora;
   final String uc;
-  final List<String> tecnologias;
   final String status;
   final List<String?> imageUrls;
 
@@ -35,12 +36,12 @@ class Site {
     required this.nome,
     required this.endereco,
     required this.municipio,
+    required this.uf,
     required this.tecnico,
     required this.latitude,
     required this.longitude,
     required this.detentora,
     required this.uc,
-    required this.tecnologias,
     this.status = 'Ativo',
     List<String?>? imageUrls,
     this.chavePortao,
@@ -65,12 +66,13 @@ class Site {
       nome: json['nome'] ?? '',
       endereco: json['endereco'] ?? '',
       municipio: json['municipio'] ?? '',
+      // Tolerante a linhas antigas (pré-coluna uf) e a cache v1 sem o campo
+      uf: json['uf']?.toString().toUpperCase() ?? '',
       tecnico: json['tecnico'] ?? '',
       latitude: _parseCoordinate(json['latitude']),
       longitude: _parseCoordinate(json['longitude']),
       detentora: json['detentora'] ?? '',
       uc: json['uc']?.toString() ?? '',
-      tecnologias: _parseTecnologias(json['tecnologias']?.toString()),
       status: finalStatus,
       imageUrls: [
         json['foto_1'] as String?,
@@ -99,12 +101,12 @@ class Site {
       'nome': nome,
       'endereco': endereco,
       'municipio': municipio,
+      'uf': uf,
       'tecnico': tecnico,
       'latitude': latitude,
       'longitude': longitude,
       'detentora': detentora,
       'uc': uc,
-      'tecnologias': tecnologias.join(','),
       'status': status,
       'foto_1': imageUrls.length > 0 ? imageUrls[0] : null,
       'foto_2': imageUrls.length > 1 ? imageUrls[1] : null,
@@ -144,12 +146,12 @@ class Site {
       nome: nome,
       endereco: endereco,
       municipio: municipio,
+      uf: uf,
       tecnico: tecnico,
       latitude: latitude,
       longitude: longitude,
       detentora: detentora,
       uc: uc,
-      tecnologias: tecnologias,
       status: status,
       imageUrls: imageUrls ?? this.imageUrls,
       chavePortao:     chavePortao     == _omit ? this.chavePortao     : chavePortao     as String?,
@@ -170,27 +172,12 @@ class Site {
     return s.isEmpty || s == 'ativo' || s == 'active' || s == 'enabled';
   }
 
-  /// Parser de tecnologias (pode vir como string separada por vírgula)
-  static List<String> _parseTecnologias(String? tecnologias) {
-    if (tecnologias == null || tecnologias.isEmpty) return [];
-    return tecnologias
-        .split(',')
-        .map((t) => t.trim().toUpperCase())
-        .where((t) => t.isNotEmpty)
-        .toList();
-  }
-
   /// Parser de coordenadas — aceita double (Supabase) ou String com vírgula/ponto (CSV)
   static double _parseCoordinate(dynamic value) {
     if (value == null) return 0.0;
     if (value is num) return value.toDouble();
     final normalized = value.toString().replaceAll(',', '.');
     return double.tryParse(normalized) ?? 0.0;
-  }
-
-  /// Verifica se possui determinada tecnologia
-  bool hasTecnologia(String tecnologia) {
-    return tecnologias.any((t) => t.toUpperCase() == tecnologia.toUpperCase());
   }
 
   /// Formata coordenadas para exibição

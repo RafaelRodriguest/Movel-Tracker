@@ -1,12 +1,24 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:movel_tracker/models/site.dart';
 
-// Opções válidas espelhadas do site_operacional_screen.dart
-const _opcoesChave = [
-  'NO CONT A', 'MA GDA', 'MA GDV', 'MA GDB', 'MA GMR',
-  'GD SLS V', 'GD CHI V', 'GD PHE V', 'GD BBL V', 'GD ITZ V',
-  'MA PCN V', 'MULTLOCK', 'EBT TETRA',
+// Opções válidas espelhadas do site_operacional_screen.dart.
+// As chaves são por estado; fontes e baterias seguem globais.
+const _opcoesChaveBase = [
+  'NO CONT A', 'MULTLOCK', 'EBT TETRA',
 ];
+
+const _opcoesChavePorUf = <String, List<String>>{
+  'MA': [
+    'NO CONT A', 'MA GDA', 'MA GDV', 'MA GDB', 'MA GMR',
+    'GD SLS V', 'GD CHI V', 'GD PHE V', 'GD BBL V', 'GD ITZ V',
+    'MA PCN V', 'MULTLOCK', 'EBT TETRA',
+  ],
+};
+
+List<String> _opcoesChaveDe(String uf) =>
+    _opcoesChavePorUf[uf.toUpperCase()] ?? _opcoesChaveBase;
+
+final _opcoesChave = _opcoesChaveDe('MA');
 
 const _opcoesFonte = [
   'ELTEK 2500', 'ELTEK FLATPACK 3000', 'EMERSON',
@@ -32,12 +44,12 @@ Site _siteBase({
     nome: 'São Luís Centro',
     endereco: 'Av. Dom Pedro II',
     municipio: 'São Luís',
+    uf: 'MA',
     tecnico: 'João',
     latitude: -2.508704,
     longitude: -44.302,
     detentora: 'ATC',
     uc: '12345678',
-    tecnologias: ['4G', '5G'],
     chavePortao: chavePortao,
     chaveGradil01: chaveGradil01,
     chaveGradil02: chaveGradil02,
@@ -58,7 +70,7 @@ void main() {
       final site = Site.fromJson({
         'site_id': 'SLZ001', 'sigla': 'X', 'nome': '', 'endereco': '',
         'municipio': '', 'tecnico': '', 'latitude': 0.0, 'longitude': 0.0,
-        'detentora': '', 'uc': '', 'tecnologias': '', 'status': 'Ativo',
+        'detentora': '', 'uc': '','status': 'Ativo',
         'chave_portao': 'MULTLOCK',
         'chave_gradil_01': 'MA GDA',
         'chave_gradil_02': 'EBT TETRA',
@@ -85,7 +97,7 @@ void main() {
       final site = Site.fromJson({
         'site_id': 'SLZ001', 'sigla': 'X', 'nome': '', 'endereco': '',
         'municipio': '', 'tecnico': '', 'latitude': 0.0, 'longitude': 0.0,
-        'detentora': '', 'uc': '', 'tecnologias': '', 'status': 'Ativo',
+        'detentora': '', 'uc': '','status': 'Ativo',
       });
 
       expect(site.chavePortao, isNull);
@@ -103,7 +115,7 @@ void main() {
       final site = Site.fromJson({
         'site_id': 'SLZ001', 'sigla': 'X', 'nome': '', 'endereco': '',
         'municipio': '', 'tecnico': '', 'latitude': 0.0, 'longitude': 0.0,
-        'detentora': '', 'uc': '', 'tecnologias': '', 'status': 'Ativo',
+        'detentora': '', 'uc': '','status': 'Ativo',
         'chave_portao': null,
         'fonte_01': null,
         'consumo_fonte_01': null,
@@ -160,7 +172,7 @@ void main() {
       final original = {
         'site_id': 'SLZ001', 'sigla': 'X', 'nome': '', 'endereco': '',
         'municipio': '', 'tecnico': '', 'latitude': 0.0, 'longitude': 0.0,
-        'detentora': '', 'uc': '', 'tecnologias': '', 'status': 'Ativo',
+        'detentora': '', 'uc': '','status': 'Ativo',
         'chave_portao': 'MA GMR',
         'chave_gradil_01': 'GD SLS V',
         'chave_gradil_02': null,
@@ -272,8 +284,25 @@ void main() {
   // ─── Validação das opções dos dropdowns ──────────────────────────────────────
 
   group('Validação — opções dos dropdowns', () {
-    test('lista de chaves contém exatamente 13 opções', () {
+    test('lista de chaves do MA contém exatamente 13 opções', () {
       expect(_opcoesChave.length, 13);
+    });
+
+    test('estados sem lista própria caem na base compartilhada', () {
+      for (final uf in ['PA', 'AM', 'RR', 'AP']) {
+        expect(_opcoesChaveDe(uf), _opcoesChaveBase,
+            reason: '$uf ainda não tem chaves cadastradas');
+      }
+    });
+
+    test('base compartilhada está contida na lista do MA', () {
+      for (final opcao in _opcoesChaveBase) {
+        expect(_opcoesChaveDe('MA').contains(opcao), isTrue);
+      }
+    });
+
+    test('opcoesChaveDe normaliza a UF para maiúsculas', () {
+      expect(_opcoesChaveDe('ma'), _opcoesChaveDe('MA'));
     });
 
     test('lista de fontes contém exatamente 6 opções', () {
@@ -315,7 +344,7 @@ void main() {
       final site = Site.fromJson({
         'site_id': 'X', 'sigla': '', 'nome': '', 'endereco': '',
         'municipio': '', 'tecnico': '', 'latitude': 0.0, 'longitude': 0.0,
-        'detentora': '', 'uc': '', 'tecnologias': '', 'status': 'Ativo',
+        'detentora': '', 'uc': '','status': 'Ativo',
         'consumo_fonte_01': '',
       });
       // String vazia deve ser preservada (a tela trata isso como "não preenchido")
@@ -327,7 +356,7 @@ void main() {
         'site_id': 'SLZ001', 'sigla': 'MASLS7', 'nome': 'São Luís Centro',
         'endereco': 'Av. Dom Pedro II', 'municipio': 'São Luís',
         'tecnico': 'João', 'latitude': -2.508704, 'longitude': -44.302,
-        'detentora': 'ATC', 'uc': '12345678', 'tecnologias': '4G,5G',
+        'detentora': 'ATC', 'uc': '12345678',
         'status': 'Ativo',
         'chave_portao': 'VALOR_QUALQUER',
         'fonte_01': 'FONTE_DESCONHECIDA',
@@ -339,7 +368,6 @@ void main() {
       expect(site.siteId, 'SLZ001');
       expect(site.nome, 'São Luís Centro');
       expect(site.latitude, -2.508704);
-      expect(site.tecnologias, ['4G', '5G']);
       expect(site.ativo, isTrue);
     });
 

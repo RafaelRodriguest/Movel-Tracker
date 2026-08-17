@@ -6,22 +6,37 @@ import '../providers/site_provider.dart';
 import '../services/supabase_service.dart';
 import '../theme/app_colors.dart';
 
-// Opções de chaves (portão, gradil 01 e gradil 02 compartilham a mesma lista)
-const _opcoesChave = [
+// Opções de chaves comuns a todos os estados — base para as UFs que ainda
+// não têm lista própria cadastrada (PA, AM, RR, AP).
+const _opcoesChaveBase = [
   'NO CONT A',
-  'MA GDA',
-  'MA GDV',
-  'MA GDB',
-  'MA GMR',
-  'GD SLS V',
-  'GD CHI V',
-  'GD PHE V',
-  'GD BBL V',
-  'GD ITZ V',
-  'MA PCN V',
   'MULTLOCK',
   'EBT TETRA',
 ];
+
+// Opções de chaves por estado (portão, gradil 01 e gradil 02 compartilham a
+// mesma lista dentro de um estado). Estados ausentes caem em _opcoesChaveBase.
+const _opcoesChavePorUf = <String, List<String>>{
+  'MA': [
+    'NO CONT A',
+    'MA GDA',
+    'MA GDV',
+    'MA GDB',
+    'MA GMR',
+    'GD SLS V',
+    'GD CHI V',
+    'GD PHE V',
+    'GD BBL V',
+    'GD ITZ V',
+    'MA PCN V',
+    'MULTLOCK',
+    'EBT TETRA',
+  ],
+};
+
+/// Lista de chaves válidas para o estado do site.
+List<String> opcoesChaveDe(String uf) =>
+    _opcoesChavePorUf[uf.toUpperCase()] ?? _opcoesChaveBase;
 
 // Opções de fontes (fonte 01 e fonte 02 compartilham a mesma lista)
 const _opcoesFonte = [
@@ -181,21 +196,21 @@ class _SiteOperacionalScreenState extends State<SiteOperacionalScreen> {
             _buildDropdown(
               label: 'Chave Portão',
               value: _chavePortao,
-              options: _opcoesChave,
+              options: opcoesChaveDe(widget.site.uf),
               onChanged: (v) => setState(() => _chavePortao = v),
             ),
             const SizedBox(height: 12),
             _buildDropdown(
               label: 'Chave Gradil 01',
               value: _chaveGradil01,
-              options: _opcoesChave,
+              options: opcoesChaveDe(widget.site.uf),
               onChanged: (v) => setState(() => _chaveGradil01 = v),
             ),
             const SizedBox(height: 12),
             _buildDropdown(
               label: 'Chave Gradil 02',
               value: _chaveGradil02,
-              options: _opcoesChave,
+              options: opcoesChaveDe(widget.site.uf),
               onChanged: (v) => setState(() => _chaveGradil02 = v),
             ),
             const SizedBox(height: 24),
@@ -326,6 +341,12 @@ class _SiteOperacionalScreenState extends State<SiteOperacionalScreen> {
     required List<String> options,
     required ValueChanged<String?> onChanged,
   }) {
+    // Valor gravado fora da lista do estado (dado legado ou migrado de outra UF)
+    // ainda precisa aparecer — caso contrário o Dropdown dispara assert.
+    final opcoes = (value == null || options.contains(value))
+        ? options
+        : [value, ...options];
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -362,7 +383,7 @@ class _SiteOperacionalScreenState extends State<SiteOperacionalScreen> {
               style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
             ),
           ),
-          ...options.map(
+          ...opcoes.map(
             (opt) => DropdownMenuItem<String>(
               value: opt,
               child: Text(opt, style: const TextStyle(fontSize: 14)),

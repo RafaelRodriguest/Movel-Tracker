@@ -5,18 +5,21 @@ import 'package:movel_tracker/services/cache_service.dart';
 
 // Site completo com todos os campos preenchidos — garante que o round-trip
 // do cache não perde nenhum campo na serialização/desserialização.
+// Estado usado nos testes — o cache agora é escopado por UF
+const _uf = 'MA';
+
 Site _siteCompleto() => Site(
       siteId: 'SLZ001',
       sigla: 'MASLS7',
       nome: 'São Luís Centro',
       endereco: 'Av. Dom Pedro II, Centro',
       municipio: 'São Luís',
+  uf: _uf,
       tecnico: 'João Silva',
       latitude: -2.508704,
       longitude: -44.302000,
       detentora: 'ATC',
       uc: '12345678',
-      tecnologias: ['4G', '5G', 'IOT'],
       status: 'Ativo',
       imageUrls: [
         'https://res.cloudinary.com/demo/image/upload/v123/foto1.jpg',
@@ -42,13 +45,28 @@ Site _siteMinimo() => Site(
       nome: 'Imperatriz',
       endereco: '',
       municipio: 'Imperatriz',
+  uf: _uf,
       tecnico: '',
       latitude: -5.52,
       longitude: -47.4833,
       detentora: '',
       uc: '',
-      tecnologias: [],
       status: 'Desativado',
+    );
+
+// Site de outro estado — usado nos testes de isolamento por UF
+Site _sitePara() => Site(
+      siteId: 'BEL001',
+      sigla: 'PABEL1',
+      nome: 'Belém Centro',
+      endereco: '',
+      municipio: 'Belém',
+      uf: 'PA',
+      tecnico: '',
+      latitude: -1.4558,
+      longitude: -48.4902,
+      detentora: 'ATC',
+      uc: '99887766',
     );
 
 void main() {
@@ -62,21 +80,21 @@ void main() {
   group('CacheService — cache vazio', () {
     test('loadSites retorna null quando não há dados salvos', () async {
       final cache = CacheService();
-      expect(await cache.loadSites(), isNull);
+      expect(await cache.loadSites(_uf), isNull);
     });
 
     test('loadSites retorna null quando há dados mas sem timestamp', () async {
       SharedPreferences.setMockInitialValues({
-        'sites_cache_v1': '[{"site_id":"SLZ001"}]',
+        'sites_cache_MA_v2': '[{"site_id":"SLZ001"}]',
         // timestamp ausente intencionalmente
       });
       final cache = CacheService();
-      expect(await cache.loadSites(), isNull);
+      expect(await cache.loadSites(_uf), isNull);
     });
 
     test('clear em cache já vazio não lança erro', () async {
       final cache = CacheService();
-      expect(() async => await cache.clear(), returnsNormally);
+      expect(() async => await cache.clear(_uf), returnsNormally);
     });
   });
 
@@ -85,8 +103,8 @@ void main() {
   group('CacheService — TTL de 30 minutos', () {
     test('cache com timestamp atual é válido', () async {
       final cache = CacheService();
-      await cache.saveSites([_siteMinimo()]);
-      expect(await cache.loadSites(), isNotNull);
+      await cache.saveSites(_uf, [_siteMinimo()]);
+      expect(await cache.loadSites(_uf), isNotNull);
     });
 
     test('cache com timestamp de 29 minutos atrás é válido', () async {
@@ -94,12 +112,12 @@ void main() {
           .subtract(const Duration(minutes: 29))
           .millisecondsSinceEpoch;
       final cache = CacheService();
-      await cache.saveSites([_siteMinimo()]);
+      await cache.saveSites(_uf, [_siteMinimo()]);
       // Sobrescreve o timestamp para simular cache com 29 min de idade
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('sites_cache_ts_v1', tsValido);
+      await prefs.setInt('sites_cache_ts_MA_v2', tsValido);
 
-      expect(await cache.loadSites(), isNotNull);
+      expect(await cache.loadSites(_uf), isNotNull);
     });
 
     test('cache com timestamp de 31 minutos atrás está expirado', () async {
@@ -107,11 +125,11 @@ void main() {
           .subtract(const Duration(minutes: 31))
           .millisecondsSinceEpoch;
       final cache = CacheService();
-      await cache.saveSites([_siteMinimo()]);
+      await cache.saveSites(_uf, [_siteMinimo()]);
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('sites_cache_ts_v1', tsExpirado);
+      await prefs.setInt('sites_cache_ts_MA_v2', tsExpirado);
 
-      expect(await cache.loadSites(), isNull);
+      expect(await cache.loadSites(_uf), isNull);
     });
 
     test('cache expirado não retorna dados mesmo com JSON válido', () async {
@@ -119,11 +137,11 @@ void main() {
           .subtract(const Duration(hours: 2))
           .millisecondsSinceEpoch;
       final cache = CacheService();
-      await cache.saveSites([_siteCompleto()]);
+      await cache.saveSites(_uf, [_siteCompleto()]);
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('sites_cache_ts_v1', tsExpirado);
+      await prefs.setInt('sites_cache_ts_MA_v2', tsExpirado);
 
-      expect(await cache.loadSites(), isNull);
+      expect(await cache.loadSites(_uf), isNull);
     });
   });
 
@@ -133,16 +151,16 @@ void main() {
     test('lista salva é recuperada com o mesmo número de sites', () async {
       final cache = CacheService();
       final sites = [_siteCompleto(), _siteMinimo()];
-      await cache.saveSites(sites);
-      final loaded = await cache.loadSites();
+      await cache.saveSites(_uf, sites);
+      final loaded = await cache.loadSites(_uf);
       expect(loaded, isNotNull);
       expect(loaded!.length, 2);
     });
 
     test('lista vazia pode ser salva e carregada', () async {
       final cache = CacheService();
-      await cache.saveSites([]);
-      final loaded = await cache.loadSites();
+      await cache.saveSites(_uf, []);
+      final loaded = await cache.loadSites(_uf);
       expect(loaded, isNotNull);
       expect(loaded!, isEmpty);
     });
@@ -150,8 +168,8 @@ void main() {
     test('campos principais do site são preservados no round-trip', () async {
       final cache = CacheService();
       final original = _siteCompleto();
-      await cache.saveSites([original]);
-      final loaded = (await cache.loadSites())!.first;
+      await cache.saveSites(_uf, [original]);
+      final loaded = (await cache.loadSites(_uf))!.first;
 
       expect(loaded.siteId, original.siteId);
       expect(loaded.sigla, original.sigla);
@@ -167,25 +185,17 @@ void main() {
     test('coordenadas são preservadas com precisão no round-trip', () async {
       final cache = CacheService();
       final original = _siteCompleto();
-      await cache.saveSites([original]);
-      final loaded = (await cache.loadSites())!.first;
+      await cache.saveSites(_uf, [original]);
+      final loaded = (await cache.loadSites(_uf))!.first;
 
       expect(loaded.latitude, original.latitude);
       expect(loaded.longitude, original.longitude);
     });
 
-    test('tecnologias são preservadas no round-trip', () async {
-      final cache = CacheService();
-      await cache.saveSites([_siteCompleto()]);
-      final loaded = (await cache.loadSites())!.first;
-
-      expect(loaded.tecnologias, ['4G', '5G', 'IOT']);
-    });
-
     test('imageUrls com URLs e nulls são preservadas no round-trip', () async {
       final cache = CacheService();
-      await cache.saveSites([_siteCompleto()]);
-      final loaded = (await cache.loadSites())!.first;
+      await cache.saveSites(_uf, [_siteCompleto()]);
+      final loaded = (await cache.loadSites(_uf))!.first;
 
       expect(loaded.imageUrls.length, 5);
       expect(loaded.imageUrls[0], contains('foto1.jpg'));
@@ -197,8 +207,8 @@ void main() {
 
     test('campos operacionais preenchidos são preservados no round-trip', () async {
       final cache = CacheService();
-      await cache.saveSites([_siteCompleto()]);
-      final loaded = (await cache.loadSites())!.first;
+      await cache.saveSites(_uf, [_siteCompleto()]);
+      final loaded = (await cache.loadSites(_uf))!.first;
 
       expect(loaded.chavePortao, 'MULTLOCK');
       expect(loaded.chaveGradil01, 'MA GDA');
@@ -209,8 +219,8 @@ void main() {
 
     test('campos operacionais null são preservados como null no round-trip', () async {
       final cache = CacheService();
-      await cache.saveSites([_siteCompleto()]);
-      final loaded = (await cache.loadSites())!.first;
+      await cache.saveSites(_uf, [_siteCompleto()]);
+      final loaded = (await cache.loadSites(_uf))!.first;
 
       expect(loaded.chaveGradil02, isNull);
       expect(loaded.fonte02, isNull);
@@ -220,8 +230,8 @@ void main() {
 
     test('site sem campos operacionais preserva todos os nulls no round-trip', () async {
       final cache = CacheService();
-      await cache.saveSites([_siteMinimo()]);
-      final loaded = (await cache.loadSites())!.first;
+      await cache.saveSites(_uf, [_siteMinimo()]);
+      final loaded = (await cache.loadSites(_uf))!.first;
 
       expect(loaded.chavePortao, isNull);
       expect(loaded.chaveGradil01, isNull);
@@ -232,11 +242,75 @@ void main() {
 
     test('status Desativado é preservado no round-trip', () async {
       final cache = CacheService();
-      await cache.saveSites([_siteMinimo()]);
-      final loaded = (await cache.loadSites())!.first;
+      await cache.saveSites(_uf, [_siteMinimo()]);
+      final loaded = (await cache.loadSites(_uf))!.first;
 
       expect(loaded.status, 'Desativado');
       expect(loaded.ativo, isFalse);
+    });
+  });
+
+  // ─── Escopo por estado ───────────────────────────────────────────────────────
+
+  group('CacheService — escopo por estado', () {
+    test('uf é preservada no round-trip', () async {
+      final cache = CacheService();
+      await cache.saveSites('PA', [_sitePara()]);
+      final loaded = (await cache.loadSites('PA'))!.first;
+      expect(loaded.uf, 'PA');
+    });
+
+    test('cache de um estado não responde por outro', () async {
+      final cache = CacheService();
+      await cache.saveSites('MA', [_siteCompleto()]);
+
+      expect(await cache.loadSites('PA'), isNull);
+      expect(await cache.loadSites('AM'), isNull);
+    });
+
+    test('estados diferentes convivem sem se sobrescrever', () async {
+      final cache = CacheService();
+      await cache.saveSites('MA', [_siteCompleto()]);
+      await cache.saveSites('PA', [_sitePara()]);
+
+      expect((await cache.loadSites('MA'))!.single.siteId, 'SLZ001');
+      expect((await cache.loadSites('PA'))!.single.siteId, 'BEL001');
+    });
+
+    test('clear de um estado não afeta o outro', () async {
+      final cache = CacheService();
+      await cache.saveSites('MA', [_siteCompleto()]);
+      await cache.saveSites('PA', [_sitePara()]);
+
+      await cache.clear('MA');
+
+      expect(await cache.loadSites('MA'), isNull);
+      expect(await cache.loadSites('PA'), isNotNull);
+    });
+
+    test('expiração é independente por estado', () async {
+      final cache = CacheService();
+      await cache.saveSites('MA', [_siteCompleto()]);
+      await cache.saveSites('PA', [_sitePara()]);
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(
+        'sites_cache_ts_MA_v2',
+        DateTime.now().subtract(const Duration(hours: 2)).millisecondsSinceEpoch,
+      );
+
+      expect(await cache.loadSites('MA'), isNull);
+      expect(await cache.loadSites('PA'), isNotNull);
+    });
+
+    test('cache global v1 (pré-uf) é ignorado', () async {
+      // Formato antigo: chave sem UF e sem o campo `uf` nos registros
+      SharedPreferences.setMockInitialValues({
+        'sites_cache': '[{"site_id":"SLZ001","nome":"São Luís Centro"}]',
+        'sites_cache_ts': DateTime.now().millisecondsSinceEpoch,
+      });
+
+      expect(await CacheService().loadSites('MA'), isNull);
     });
   });
 
@@ -245,20 +319,20 @@ void main() {
   group('CacheService — clear', () {
     test('clear remove os dados e loadSites retorna null', () async {
       final cache = CacheService();
-      await cache.saveSites([_siteCompleto()]);
-      expect(await cache.loadSites(), isNotNull);
+      await cache.saveSites(_uf, [_siteCompleto()]);
+      expect(await cache.loadSites(_uf), isNotNull);
 
-      await cache.clear();
-      expect(await cache.loadSites(), isNull);
+      await cache.clear(_uf);
+      expect(await cache.loadSites(_uf), isNull);
     });
 
     test('após clear é possível salvar novos dados normalmente', () async {
       final cache = CacheService();
-      await cache.saveSites([_siteCompleto()]);
-      await cache.clear();
-      await cache.saveSites([_siteMinimo()]);
+      await cache.saveSites(_uf, [_siteCompleto()]);
+      await cache.clear(_uf);
+      await cache.saveSites(_uf, [_siteMinimo()]);
 
-      final loaded = await cache.loadSites();
+      final loaded = await cache.loadSites(_uf);
       expect(loaded, isNotNull);
       expect(loaded!.first.siteId, 'ITZ045');
     });
@@ -270,35 +344,35 @@ void main() {
     test('JSON inválido retorna null e não lança exceção', () async {
       final ts = DateTime.now().millisecondsSinceEpoch;
       SharedPreferences.setMockInitialValues({
-        'sites_cache_v1': 'json_invalido_{{{',
-        'sites_cache_ts_v1': ts,
+        'sites_cache_MA_v2': 'json_invalido_{{{',
+        'sites_cache_ts_MA_v2': ts,
       });
       final cache = CacheService();
-      expect(await cache.loadSites(), isNull);
+      expect(await cache.loadSites(_uf), isNull);
     });
 
     test('JSON corrompido limpa o cache automaticamente', () async {
       final ts = DateTime.now().millisecondsSinceEpoch;
       SharedPreferences.setMockInitialValues({
-        'sites_cache_v1': 'corrompido',
-        'sites_cache_ts_v1': ts,
+        'sites_cache_MA_v2': 'corrompido',
+        'sites_cache_ts_MA_v2': ts,
       });
       final cache = CacheService();
-      await cache.loadSites(); // dispara limpeza interna
+      await cache.loadSites(_uf); // dispara limpeza interna
       // Após corrupção, um novo save/load deve funcionar normalmente
-      await cache.saveSites([_siteMinimo()]);
-      expect(await cache.loadSites(), isNotNull);
+      await cache.saveSites(_uf, [_siteMinimo()]);
+      expect(await cache.loadSites(_uf), isNotNull);
     });
 
     test('array com objeto malformado retorna null', () async {
       final ts = DateTime.now().millisecondsSinceEpoch;
       SharedPreferences.setMockInitialValues({
-        'sites_cache_v1': '[{"campo_inexistente": true}]',
-        'sites_cache_ts_v1': ts,
+        'sites_cache_MA_v2': '[{"campo_inexistente": true}]',
+        'sites_cache_ts_MA_v2': ts,
       });
       final cache = CacheService();
       // fromJson com campos obrigatórios ausentes não deve travar o app
-      expect(() async => await cache.loadSites(), returnsNormally);
+      expect(() async => await cache.loadSites(_uf), returnsNormally);
     });
   });
 }

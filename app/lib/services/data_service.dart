@@ -106,7 +106,6 @@ class DataService {
       'longitude',
       'detentora',
       'uc',
-      'tecnologias',
       'status',
     ];
 

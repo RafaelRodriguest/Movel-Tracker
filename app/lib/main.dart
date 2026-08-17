@@ -5,7 +5,7 @@ import 'config/env.dart';
 import 'theme/app_colors.dart';
 import 'providers/auth_provider.dart';
 import 'providers/site_provider.dart';
-import 'screens/home_screen.dart';
+import 'screens/state_selection_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/reset_password_screen.dart';
 
@@ -101,7 +101,7 @@ class _AppEntry extends StatelessWidget {
     final auth = context.watch<AuthProvider>();
     if (auth.isInitializing) return const _SplashScreen();
     if (auth.isPasswordRecovery) return const ResetPasswordScreen();
-    if (auth.isLoggedIn) return const HomeScreen();
+    if (auth.isLoggedIn) return const StateSelectionScreen();
     return const LoginScreen();
   }
 }

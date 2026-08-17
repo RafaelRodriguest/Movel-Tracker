@@ -4,8 +4,11 @@ import '../models/site.dart';
 class SupabaseService {
   final _client = Supabase.instance.client;
 
-  Future<List<Site>> fetchSites() async {
-    final data = await _client.from('sites').select().order('nome');
+  /// Busca os sites de um estado. O filtro é feito na query — as policies de
+  /// RLS continuam globais (ver SKILS.md/multi-estado-expansion.md, Fase 1).
+  Future<List<Site>> fetchSites({required String uf}) async {
+    final data =
+        await _client.from('sites').select().eq('uf', uf).order('nome');
     return (data as List)
         .map((row) => Site.fromJson(row as Map<String, dynamic>))
         .toList();

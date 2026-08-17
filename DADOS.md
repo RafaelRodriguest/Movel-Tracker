@@ -1,157 +1,155 @@
-# Fonte de Dados - Sites Claro Maranhão
+# Fonte de Dados — Sites Claro
 
-Este documento descreve onde os dados dos sites são armazenados e como o aplicativo busca essas informações.
+Este documento descreve onde os dados dos sites ficam armazenados, como o aplicativo os busca e como eles são mantidos em cache no dispositivo.
 
 ---
 
 ## 📍 Local de Armazenamento
 
-### Google Sheets (Planilha)
+**Supabase (Postgres)** — tabela `sites`. É a única fonte de dados de produção.
 
-Os dados dos sites são armazenados em uma planilha do Google Sheets que será pública para leitura, em uma conta google que criarei para armazenar essa planilha.
+Os dados de todos os estados vivem na **mesma tabela**, separados pela coluna `uf`. O app nunca carrega a tabela inteira: a query filtra pelo estado escolhido na tela de seleção (`state_selection_screen.dart`).
 
-**Nome da Planilha:** `Sites Claro - Maranhão`
+Estados habilitados hoje: **MA**, **PA**, **AM**, **RR**, **AP**.
 
-**Acesso Público:** A planilha deve ser compartilhada com link público (qualquer pessoa com o link pode visualizar).
+Credenciais em `app/lib/config/env.dart` (`Env.supabaseUrl`, `Env.supabaseAnonKey`).
 
 ---
 
-## 📊 Estrutura das Colunas
+## 📊 Estrutura da Tabela `sites`
+
+### Identificação e localização
 
 | Coluna | Descrição | Exemplo | Tipo |
 |--------|-----------|---------|------|
-| `site_id` | Identificador único do site | `SLZ001` | String |
-| `sigla` | Sigla/Nome técnico do site | `MASLS7` | String |
-| `nome` | Nome descritivo do site | `São Luís Centro` | String |
-| `endereco` | Endereço completo | `Av. Dom Pedro II, Centro` | String |
-| `municipio` | Município/UF | `São Luís, MA` | String |
-| `latitude` | Coordenada latitude | `-2.529` | Double |
-| `longitude` | Coordenada longitude | `-44.302` | Double |
-| `detentora` | Proprietário da torre | `ATC` | String |
-| `uc` | UC do site | `12345678` | String |
-| `tecnologias` | Tecnologias disponíveis | `4G,5G` | String |
-| `status` | Status do site | `Ativo` | String |
+| `site_id` | Identificador único do site | `SLZ001` | text (PK) |
+| `sigla` | Sigla/nome técnico do site | `MASLS7` | text |
+| `nome` | Nome descritivo | `São Luís Centro` | text |
+| `endereco` | Endereço completo | `Av. Dom Pedro II, Centro` | text |
+| `municipio` | Município (sem UF) | `São Luís` | text |
+| `uf` | Sigla do estado — escopa a busca | `MA` | text |
+| `tecnico` | Técnico responsável | `João Silva` | text |
+| `latitude` | Coordenada latitude | `-2.5297` | double |
+| `longitude` | Coordenada longitude | `-44.3028` | double |
+| `detentora` | Proprietário da torre | `ATC` | text |
+| `uc` | Unidade Consumidora | `12345678` | text |
+| `status` | `Ativo` ou `Desativado` | `Ativo` | text |
 
----
+### Fotos
 
-## 🔗 Acesso aos Dados
+| Coluna | Descrição | Tipo |
+|--------|-----------|------|
+| `foto_1` … `foto_5` | URLs das imagens no Cloudinary | text (nullable) |
 
-### URL do Google Sheets (CSV)
+### Campos operacionais
 
-Para acessar os dados em formato CSV diretamente da planilha:
+Editáveis no app por usuários `cell_owner`, via `site_operacional_screen.dart`.
 
-```
-https://docs.google.com/spreadsheets/d/{PLANILHA_ID}/export?format=csv
-```
+| Coluna | Descrição | Tipo |
+|--------|-----------|------|
+| `chave_portao` | Chave do portão (dropdown fixo) | text (nullable) |
+| `chave_gradil_01` / `chave_gradil_02` | Chaves dos gradis | text (nullable) |
+| `fonte_01` / `fonte_02` | Modelo da fonte (dropdown fixo) | text (nullable) |
+| `consumo_fonte_01` / `consumo_fonte_02` | Consumo (texto livre) | text (nullable) |
+| `baterias_fonte_01` / `baterias_fonte_02` | Quantidade de baterias (1–9) | text (nullable) |
 
-**Substitua `{PLANILHA_ID}` pelo ID da sua planilha.**
+As opções válidas dos dropdowns são constantes em `site_operacional_screen.dart` e estão espelhadas em `app/test/operacional_test.dart` — adicionar opção exige atualizar os dois arquivos.
 
-### Como encontrar o PLANILHA_ID
+### Tabelas de apoio
 
-1. Abra sua planilha no Google Sheets
-2. A URL tem o formato: `https://docs.google.com/spreadsheets/d/1A2B3C4D5E6F7G8H9I0J/edit#gid=0`
-3. O ID é: `1A2B3C4D5E6F7G8H9I0J`
+| Tabela | Conteúdo |
+|--------|----------|
+| `profiles` | `id`, `login`, `nome`, `email`, `role` (`cell_owner` \| `geral`) |
+| `audit_log` | `user_id`, `site_id`, `action`, `detail` — trilha de fotos e edições operacionais |
 
 ---
 
 ## 📱 Como o Aplicativo Busca os Dados
 
-### Fluxo de Carregamento
+### Fluxo de carregamento
 
-1. **Inicialização:** Ao abrir o app, verifica se há dados armazenados localmente
-2. **Busca (se necessário):** Faz requisição HTTP para a URL do CSV
-3. **Parse:** Converte o CSV em uma lista de objetos `Site`
-4. **Armazenamento Local:** Salva os dados para uso offline
-5. **Busca:** Os usuários pesquisam usando os dados locais
+```
+StateSelectionScreen (usuário escolhe a UF)
+    ↓
+SiteProvider.selectUf(uf)
+    ↓
+SiteRepository.loadFromSupabase(uf)
+    ├── 1. CacheService.loadSites(uf) — cache válido? retorna e não toca no Supabase
+    ├── 2. SupabaseService.fetchSites(uf: uf) — cache miss/expirado
+    │      └── grava no cache via CacheService.saveSites(uf, sites)
+    └── 3. null (rede caiu e cache vazio)
+           └── SiteProvider cai em SiteRepository.loadMockData(uf)
+```
 
-### Endpoint no Código Dart
+A carga **não** acontece no construtor do provider — antes da escolha do estado não há o que buscar.
 
-No arquivo `lib/services/data_service.dart`:
+### A query
+
+`app/lib/services/supabase_service.dart:11`
 
 ```dart
-class DataService {
-  // URL do Google Sheets CSV
-  static const String _csvUrl = 'https://docs.google.com/spreadsheets/d/{PLANILHA_ID}/export?format=csv';
-
-  Future<List<Site>> fetchSites() async {
-    final response = await http.get(Uri.parse(_csvUrl));
-    if (response.statusCode == 200) {
-      return parseCsv(response.body);
-    }
-    throw Exception('Falha ao carregar dados');
-  }
-}
+await _client.from('sites').select().eq('uf', uf).order('nome');
 ```
+
+O `select()` sem argumentos traduz para `select *`. Por isso o app tolera colunas extras no retorno: o `Site.fromJson` só lê as chaves que conhece e ignora o resto.
+
+### Cache local
+
+`app/lib/services/cache_service.dart` — `shared_preferences`, escopado por estado:
+
+| Aspecto | Valor |
+|---------|-------|
+| Chaves | `sites_cache_<UF>_v2` e `sites_cache_ts_<UF>_v2` |
+| TTL | 30 minutos |
+| Serialização | `Site.toJson()` → JSON; parse de volta em isolate (`compute`) |
+| Corrupção | parse falha → limpa a chave e força re-fetch |
+
+O sufixo `_v2` marca o cache escopado por UF; o bump invalidou o cache global `v1`, que não tinha o campo `uf`.
+
+**Invalidação:** `SiteProvider.refresh()` (pull-to-refresh) limpa antes de recarregar, e toda escrita no Supabase — `updateSiteImageUrls` e `updateSiteFields` — dispara `clearCache(uf)` em background, para o próximo cold start pegar dados frescos.
+
+### Fallback mock
+
+`SiteRepository._mockPorUf` tem 5 sites de exemplo, todos do MA. É a última linha de defesa quando cache e Supabase falham; estados sem mock cadastrado ficam com lista vazia.
 
 ---
 
-## 📝 Exemplo de Linha da Planilha (CSV)
+## ✍️ Como os Dados Entram no Banco
 
-```csv
-site_id,sigla,nome,endereco,municipio,latitude,longitude,detentora,uc,tecnologias,status
-SLZ001,MASLS7,São Luís Centro,Av. Dom Pedro II, Centro,São Luís, MA,-2.529,-44.302,ATC,12345678,4G,5G,Ativo
-ITZ045,MAITZ2,Imperatriz Matriz,Rua Grande, Centro,Imperatriz, MA,-5.528,-47.477,American Tower,87654321,4G,Ativo
-CXS012,MACXS4,Caxias Norte,Av. Floriano, Caxias,Caxias, MA,-4.850,-43.357,TorreBrasil,54321678,4G,5G,Ativo
-```
+Não há cadastro de sites pelo app — a carga é feita por SQL no **SQL Editor** do Supabase, a partir do CSV de sites.
 
----
+O gerador de SQL a partir do CSV e o procedimento completo de importação estão em **`SKILS.md/import-csv-multi-estado.md`**.
 
-## ⚠️ Configuração Necessária
-
-### Para tornar a planilha acessível via CSV:
-
-1. Abra a planilha no Google Sheets
-2. Clique em **Compartilhar**
-3. Mude para: **"Qualquer pessoa com o link"** e dê acesso de **Visualizador**
-4. Copie o ID da URL e insira no código em `lib/services/data_service.dart`
-
-### Para atualizar o ID no código:
-
-Edite o arquivo `app/lib/services/data_service.dart` e altere a linha:
-
-```dart
-static const String _csvUrl = 'https://docs.google.com/spreadsheets/d/SEU_ID_AQUI/export?format=csv';
-```
+Usuários também são cadastrados manualmente pelo admin no Dashboard do Supabase (não há auto-cadastro). Apenas domínios `@claro.com.br` e `@stte.com.br` são autorizados.
 
 ---
 
 ## 🔒 Segurança
 
-- A planilha é **somente leitura** para o aplicativo
-- Não há autenticação necessária para leitura (URL pública)
-- Dados são públicos apenas para visualização
-- Edição deve ser feita manualmente via interface do Google Sheets
+- **RLS ativo** na tabela `sites`: `authenticated` lê; apenas `cell_owner` atualiza.
+- As policies de RLS são **globais**, não por estado — o recorte por `uf` é feito na query, não no banco. Ver `SKILS.md/multi-estado-expansion.md`, Fase 1.
+- Um `UPDATE` sem policy explícita é **bloqueado silenciosamente** pelo Supabase: retorna sucesso e não grava nada.
+- A `anonKey` no cliente é pública por design — o que protege os dados é o RLS, não o segredo da chave.
 
 ---
 
-## 📊 Modelo de Dados (Dart)
+## 🗄️ Legado: Google Sheets
 
-```dart
-class Site {
-  final String siteId;
-  final String sigla;
-  final String nome;
-  final String endereco;
-  final String municipio;
-  final double latitude;
-  final double longitude;
-  final String detentora;
-  final String uc;
-  final List<String> tecnologias;
-  final String status;
+`app/lib/services/data_service.dart` ainda contém o leitor de CSV do Google Sheets usado antes da migração para o Supabase. **Não tem nenhum call site no app** — está no repositório como referência histórica.
 
-  Site({
-    required this.siteId,
-    required this.sigla,
-    required this.nome,
-    required this.endereco,
-    required this.municipio,
-    required this.latitude,
-    required this.longitude,
-    required this.detentora,
-    required this.uc,
-    required this.tecnologias,
-    required this.status,
-  });
-}
-```
+Duas ressalvas para quem for reaproveitá-lo:
+
+- A lista de colunas em `_rowToMap` (`data_service.dart:98`) não inclui `uf` — sites vindos desse caminho nascem com `uf: ''` e não aparecem em nenhuma seleção de estado.
+- A URL da planilha está hardcoded e aponta para a planilha original do Maranhão.
+
+O histórico da migração Sheets → Supabase está em `SKILS.md/supabase-migration.md`.
+
+---
+
+## 📋 Modelo de Dados (Dart)
+
+`app/lib/models/site.dart` — classe imutável. Além dos campos das tabelas acima:
+
+- **`imageUrls`** — as 5 colunas `foto_*` viram uma lista de tamanho **fixo 5**, preenchida com `null`. Índices `[0]`–`[4]` podem ser usados direto, sem checar comprimento.
+- **`copyWith` com sentinel** — os campos operacionais usam `Object? campo = _omit` em vez de `String? campo`, para distinguir "não informado" (mantém o valor atual) de "`null` intencional" (limpa a coluna). Só `imageUrls` e os campos operacionais são parâmetros do `copyWith`; para alterar os campos imutáveis, construa um `Site(...)` novo.
+- **Tolerância de parse** — `_parseCoordinate` aceita `double` (Supabase) ou `String` com vírgula ou ponto (CSV); `uf` ausente vira `''`, o que mantém compatibilidade com linhas antigas e com cache `v1`.
