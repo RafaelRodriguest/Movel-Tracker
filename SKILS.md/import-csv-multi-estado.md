@@ -47,6 +47,15 @@ Deve retornar uma linha só: `MA | <total atual>`.
 
 ---
 
+> **Atalho — foi assim que AM/PA/RR/AP entraram (2026-08-17).** Em vez dos passos
+> 2–7, o CSV foi convertido offline em arquivos `.sql` com os `insert ... on
+> conflict` prontos, colados direto no SQL Editor. Some a staging, o `\copy`, a
+> connection string e os problemas de encoding/separador — a conversão trata
+> ISO-8859-1, `;`, vírgula decimal e `status` minúsculo de uma vez, e aborta em
+> `site_id` duplicado, UF inesperada ou coordenada não numérica. Só o passo 1
+> continua obrigatório. Divida em arquivos de ~500 linhas: acima disso o editor
+> do navegador engasga. Os passos 2–7 abaixo seguem válidos como alternativa.
+
 ## Passo 2 — Criar a tabela de staging
 
 Importar direto na `sites` é arriscado: `site_id` é `unique` (re-importar o MA
@@ -175,7 +184,7 @@ select
   nullif(replace(longitude, ',', '.'), '')::double precision,
   detentora,
   uc,
-  coalesce(nullif(status, ''), 'Ativo')
+  initcap(coalesce(nullif(status, ''), 'Ativo'))
 from sites_import
 on conflict (site_id) do update set
   sigla     = excluded.sigla,
@@ -208,10 +217,11 @@ drop table sites_import;
 
 ---
 
-## Passo 8 — Habilitar os estados no app
+## Passo 8 — Habilitar os estados no app ✅ feito
 
 Só depois que o passo 6 fechar. Em `app/lib/screens/state_selection_screen.dart`,
-trocar `disponivel: false` por `true` nos estados carregados:
+trocar `disponivel: false` por `true` nos estados carregados — os cinco já estão
+habilitados desde a carga de 2026-08-17 (1481 sites: AM 448, PA 849, RR 83, AP 101):
 
 ```dart
 const _ufs = <_UF>[

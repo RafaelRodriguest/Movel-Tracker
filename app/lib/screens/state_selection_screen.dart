@@ -19,14 +19,13 @@ class _UF {
 }
 
 /// Estados atendidos pelo Movel Tracker.
-/// Apenas MA possui funcionalidade ativa; os demais serão habilitados
-/// conforme os sites forem cadastrados.
+/// Todos com sites cadastrados na tabela `sites` (coluna `uf`).
 const _ufs = <_UF>[
   _UF(sigla: 'MA', nome: 'Maranhão', disponivel: true),
-  _UF(sigla: 'PA', nome: 'Pará'),
-  _UF(sigla: 'AM', nome: 'Amazonas'),
-  _UF(sigla: 'RR', nome: 'Roraima'),
-  _UF(sigla: 'AP', nome: 'Amapá'),
+  _UF(sigla: 'PA', nome: 'Pará', disponivel: true),
+  _UF(sigla: 'AM', nome: 'Amazonas', disponivel: true),
+  _UF(sigla: 'RR', nome: 'Roraima', disponivel: true),
+  _UF(sigla: 'AP', nome: 'Amapá', disponivel: true),
 ];
 
 /// Tela inicial de seleção de estado (UF).
