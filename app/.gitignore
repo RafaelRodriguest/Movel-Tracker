@@ -7,6 +7,7 @@ build/
 # Ambiente
 .env
 lib/config/env.dart
+lib/config/env_dev.dart
 
 # JDK local
 jdk17/

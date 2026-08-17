@@ -22,7 +22,11 @@ void main() async {
 }
 
 class ClaroSitesApp extends StatelessWidget {
-  const ClaroSitesApp({super.key});
+  /// true no entrypoint main_dev.dart — mostra a fita "DEV" na tela, para não
+  /// confundir com o app conectado ao banco de produção.
+  final bool isDev;
+
+  const ClaroSitesApp({super.key, this.isDev = false});
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +91,14 @@ class ClaroSitesApp extends StatelessWidget {
             ),
           ),
         ),
-        home: const _AppEntry(),
+        home: isDev
+            ? const Banner(
+                message: 'DEV',
+                location: BannerLocation.topEnd,
+                color: Colors.red,
+                child: _AppEntry(),
+              )
+            : const _AppEntry(),
       ),
     );
   }
