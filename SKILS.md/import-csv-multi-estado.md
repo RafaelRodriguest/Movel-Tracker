@@ -8,14 +8,17 @@
 ## Colunas do CSV
 
 ```
-site_id, sigla, nome, endereco, municipio, tecnico, latitude, longitude, detentora, uc, status
+site_id, uf, sigla, nome, endereco, municipio, tecnico, latitude, longitude, detentora, uc, status
 ```
 
-Duas ausências em relação à tabela `sites`, ambas toleradas pelo app:
+A `uf` é a **coluna B** da planilha. A posição não importa para o importador do
+Supabase (ele casa pelo **nome do cabeçalho**), mas o cabeçalho precisa ser
+exatamente `uf`, minúsculo.
+
+Uma ausência em relação à tabela `sites`, tolerada pelo app:
 
 | Coluna | Situação |
 |--------|----------|
-| `uf` | **Não existe no CSV** — precisa ser derivada ou adicionada (passo 3) |
 | `tecnologias` | Não existe no CSV — fica `null`; `Site.fromJson` converte para lista vazia |
 
 ---
@@ -53,6 +56,7 @@ quebraria) e latitude/longitude podem vir com vírgula decimal. A staging é tod
 ```sql
 create table sites_import (
   site_id   text,
+  uf        text,
   sigla     text,
   nome      text,
   endereco  text,
@@ -88,42 +92,38 @@ select count(*) from sites_import;
 
 ---
 
-## Passo 4 — Definir a `uf` de cada linha
+## Passo 4 — Normalizar e conferir a `uf`
 
-O CSV não traz o estado, então ele precisa sair de algum lugar. **Escolha uma das
-opções abaixo** — a A é a mais confiável se a `sigla` seguir o padrão do MA
-(`MASLS7`, `MAITZ2`, `MACXS4`: dois primeiros caracteres = UF).
-
-### Opção A — derivar dos 2 primeiros caracteres da `sigla`
-
-Primeiro **confira** o que isso produziria, sem gravar nada:
+A UF vem do próprio CSV, então aqui não há derivação — só limpeza e conferência.
 
 ```sql
-select upper(left(sigla, 2)) as uf_derivada, count(*)
+update sites_import set uf = upper(trim(uf));
+```
+
+Ver o que entrou:
+
+```sql
+select uf, count(*) from sites_import group by uf order by uf;
+```
+
+Só siga se o resultado for exatamente `MA / PA / AM / RR / AP`. Sobra típica:
+célula vazia (vira `''`, não `null`), UF com espaço ou minúscula (resolvidas pelo
+`update` acima) e siglas de estados que ainda não estão no app.
+
+Cruzamento opcional — se a `sigla` seguir o padrão do MA (`MASLS7`, `MAITZ2`:
+dois primeiros caracteres = UF), esta query aponta divergências entre a coluna
+nova e a sigla, que costumam ser erro de digitação na planilha:
+
+```sql
+select site_id, sigla, uf, upper(left(sigla, 2)) as uf_da_sigla
 from sites_import
-group by 1
-order by 2 desc;
+where uf is distinct from upper(left(sigla, 2));
 ```
 
-Só siga se o resultado for exatamente `MA / PA / AM / RR / AP`. Qualquer outro
-valor (ou `null`) significa que há siglas fora do padrão — trate-as antes.
+Corrigir uma linha específica, se for o caso:
 
 ```sql
-alter table sites_import add column uf text;
-update sites_import set uf = upper(left(sigla, 2));
-```
-
-### Opção B — informar a UF no próprio CSV (mais seguro)
-
-Adicione uma coluna `uf` na planilha, preenchida por linha, antes de importar —
-e inclua `uf text` no `create table sites_import` do passo 2. Nada a fazer aqui.
-
-### Opção C — um CSV por estado
-
-Importe um arquivo de cada vez e, entre cada importação, carimbe as linhas novas:
-
-```sql
-update sites_import set uf = 'PA' where uf is null;
+update sites_import set uf = 'PA' where site_id = 'XXX000';
 ```
 
 ---
@@ -131,8 +131,9 @@ update sites_import set uf = 'PA' where uf is null;
 ## Passo 5 — Validar antes de mesclar
 
 ```sql
--- 1. Nenhuma linha sem UF, e só as 5 UFs esperadas
-select uf, count(*) from sites_import group by uf order by uf;
+-- 1. Nenhuma linha sem UF (null ou vazia) nem com UF fora das 5 esperadas
+select site_id, sigla, uf from sites_import
+where coalesce(uf, '') not in ('MA', 'PA', 'AM', 'RR', 'AP');
 
 -- 2. site_id duplicado dentro do próprio CSV
 select site_id, count(*) from sites_import group by site_id having count(*) > 1;
