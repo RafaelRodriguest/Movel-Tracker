@@ -157,7 +157,7 @@ Existe um projeto Supabase separado (`movel-tracker-dev`, free tier) para não d
 - **Entrypoint prod:** `flutter run` (usa `lib/main.dart` padrão, `env.dart`, sem fita).
 - **Schema:** réplica do schema de produção, versionada em `supabase/migrations/`. Ao alterar o schema de produção, aplique a mesma migration no projeto dev.
 - **Dados de teste:** sites fictícios (reaproveitados dos mocks locais) e dois usuários de teste, um por role (`cell_owner` e `geral`), cadastrados manualmente no projeto dev.
-- **Cloudinary:** `env_dev.dart` reaproveita o preset de produção (`movel_tracker_preset`) por enquanto — TODO: criar preset `movel_tracker_preset_dev` separado no dashboard Cloudinary para não misturar mídia de teste com a de produção.
+- **Cloudinary:** preset dedicado `movel_tracker_preset_dev` (unsigned), separado do preset de produção — mídia de teste não se mistura com a de produção.
 - **Free tier do Supabase pausa projetos após 7 dias sem uso.** Se o projeto dev estiver pausado, `flutter run -t lib/main_dev.dart` vai falhar ao buscar do Supabase — o app já cai automaticamente no fallback de dados mock (`SiteRepository`), então continua utilizável para testar UI mesmo com o backend pausado. Para reativar, acesse o dashboard do projeto no Supabase.
 
 ## 🚀 Comandos de Desenvolvimento
