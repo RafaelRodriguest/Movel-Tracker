@@ -1,0 +1,34 @@
+name: CI
+
+# Roda analyze e os testes do Flutter a cada push/PR, pra pegar erro antes
+# de chegar no main. Ver CLAUDE.md, seção "Fluxo de Desenvolvimento e CI".
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.1'
+          channel: 'stable'
+          cache: true
+
+      - name: Instalar dependências
+        run: flutter pub get
+
+      - name: Analisar código
+        run: flutter analyze
+
+      - name: Rodar testes
+        run: flutter test

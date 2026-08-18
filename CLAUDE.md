@@ -176,6 +176,26 @@ flutter build apk --release  # APK de produção
 flutter pub run flutter_launcher_icons  # Regenerar ícone do app
 ```
 
+## 🤖 CI
+
+`.github/workflows/ci.yml` roda `flutter analyze` e `flutter test` a cada push/PR para `main`. Objetivo: pegar erro de análise estática ou teste quebrado antes do merge — não existe branch protection habilitada no GitHub (plano free + repo privado), então o CI é só sinal visual (checagem verde/vermelha no PR/commit), não bloqueio automático. Antes de dar merge numa branch, confira se o CI passou.
+
+## 🗄️ Migrations do Supabase
+
+Toda alteração de **schema** em produção (nova tabela, coluna, índice, policy RLS) deve virar um arquivo versionado em `supabase/migrations/`, nunca só colada direto no SQL Editor do dashboard:
+
+```bash
+supabase migration new nome_da_mudanca   # cria supabase/migrations/<timestamp>_nome_da_mudanca.sql
+# editar o arquivo gerado com o DDL
+supabase db push --linked                # aplica em produção
+```
+
+Isso mantém `supabase/migrations/` como fonte da verdade do schema — sem isso, não dá pra saber o que rodou em produção nem replicar a mudança no projeto dev. Ao alterar o schema de produção, aplique a mesma migration no projeto dev (`supabase link` pro projeto dev e `db push` lá também).
+
+**Carga de dados em massa** (ex.: importação de CSV de sites novos) é diferente de mudança de schema — pode continuar sendo feita via SQL Editor ou script, já que não é algo que faz sentido versionar como migration. Mas documente o que foi feito (memória do projeto ou commit) para rastreabilidade.
+
+Para checar se o schema de produção bateu com o último migration versionado: `supabase db dump --linked --schema public -f /tmp/schema_atual.sql` e comparar com o arquivo de migration mais recente.
+
 ## Padrões de Código
 
 ### Sentinel em `Site.copyWith`
