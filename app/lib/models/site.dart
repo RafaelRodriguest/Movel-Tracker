@@ -30,6 +30,9 @@ class Site {
   final String? bateriasFonte01;
   final String? bateriasFonte02;
 
+  /// Definido por trigger no Supabase a cada UPDATE — nunca pelo app.
+  final DateTime? updatedAt;
+
   Site({
     required this.siteId,
     required this.sigla,
@@ -53,6 +56,7 @@ class Site {
     this.consumoFonte02,
     this.bateriasFonte01,
     this.bateriasFonte02,
+    this.updatedAt,
   }) : imageUrls = imageUrls ?? List.filled(5, null);
 
   /// Cria um Site a partir de um mapa (JSON/CSV)
@@ -90,6 +94,7 @@ class Site {
       consumoFonte02: json['consumo_fonte_02'] as String?,
       bateriasFonte01: json['baterias_fonte_01'] as String?,
       bateriasFonte02: json['baterias_fonte_02'] as String?,
+      updatedAt: _parseTimestamp(json['updated_at']),
     );
   }
 
@@ -122,6 +127,7 @@ class Site {
       'consumo_fonte_02': consumoFonte02,
       'baterias_fonte_01': bateriasFonte01,
       'baterias_fonte_02': bateriasFonte02,
+      'updated_at': updatedAt?.toIso8601String(),
     };
   }
 
@@ -139,6 +145,7 @@ class Site {
     Object? consumoFonte02 = _omit,
     Object? bateriasFonte01 = _omit,
     Object? bateriasFonte02 = _omit,
+    Object? updatedAt = _omit,
   }) {
     return Site(
       siteId: siteId,
@@ -163,6 +170,7 @@ class Site {
       consumoFonte02:  consumoFonte02  == _omit ? this.consumoFonte02  : consumoFonte02  as String?,
       bateriasFonte01: bateriasFonte01 == _omit ? this.bateriasFonte01 : bateriasFonte01 as String?,
       bateriasFonte02: bateriasFonte02 == _omit ? this.bateriasFonte02 : bateriasFonte02 as String?,
+      updatedAt:       updatedAt       == _omit ? this.updatedAt       : updatedAt       as DateTime?,
     );
   }
 
@@ -178,6 +186,12 @@ class Site {
     if (value is num) return value.toDouble();
     final normalized = value.toString().replaceAll(',', '.');
     return double.tryParse(normalized) ?? 0.0;
+  }
+
+  /// Parser de timestamp — aceita ISO8601 do Supabase ou do cache local
+  static DateTime? _parseTimestamp(dynamic value) {
+    if (value == null) return null;
+    return DateTime.tryParse(value.toString());
   }
 
   /// Formata coordenadas para exibição

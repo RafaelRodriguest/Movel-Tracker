@@ -152,10 +152,17 @@ class SiteProvider with ChangeNotifier {
   }
 
   /// Atualiza as URLs de foto de um site no estado local
-  void updateSiteImageUrls(String siteId, List<String?> urls) {
+  void updateSiteImageUrls(
+    String siteId,
+    List<String?> urls, {
+    DateTime? updatedAt,
+  }) {
     final index = _allSites.indexWhere((s) => s.siteId == siteId);
     if (index == -1) return;
-    _allSites[index] = _allSites[index].copyWith(imageUrls: urls);
+    _allSites[index] = _allSites[index].copyWith(
+      imageUrls: urls,
+      updatedAt: updatedAt ?? _allSites[index].updatedAt,
+    );
     _applyFilters();
     notifyListeners();
     // Invalida cache em background — próximo cold start buscará dados frescos

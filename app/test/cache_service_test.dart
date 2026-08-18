@@ -205,6 +205,23 @@ void main() {
       expect(loaded.imageUrls[4], isNull);
     });
 
+    test('updatedAt sobrevive ao jsonEncode do cache', () async {
+      final cache = CacheService();
+      final updatedAt = DateTime.utc(2026, 8, 18, 14, 37, 5);
+      await cache.saveSites(_uf, [_siteCompleto().copyWith(updatedAt: updatedAt)]);
+      final loaded = (await cache.loadSites(_uf))!.first;
+
+      expect(loaded.updatedAt, updatedAt);
+    });
+
+    test('updatedAt null é preservado como null no round-trip', () async {
+      final cache = CacheService();
+      await cache.saveSites(_uf, [_siteMinimo()]);
+      final loaded = (await cache.loadSites(_uf))!.first;
+
+      expect(loaded.updatedAt, isNull);
+    });
+
     test('campos operacionais preenchidos são preservados no round-trip', () async {
       final cache = CacheService();
       await cache.saveSites(_uf, [_siteCompleto()]);

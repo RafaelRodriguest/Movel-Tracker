@@ -279,6 +279,28 @@ void main() {
       expect(updated.fonte01, 'ELTEK 2500');
       expect(updated.consumoFonte01, '600');
     });
+
+    test('copyWith omitido preserva o updatedAt anterior', () {
+      final antes = DateTime.utc(2026, 8, 18, 14, 37);
+      final original = _siteBase(chavePortao: 'MULTLOCK').copyWith(updatedAt: antes);
+
+      expect(original.copyWith(fonte01: 'ELTEK 2500').updatedAt, antes);
+    });
+
+    test('copyWith com null explícito limpa o updatedAt', () {
+      final original =
+          _siteBase().copyWith(updatedAt: DateTime.utc(2026, 8, 18, 14, 37));
+
+      expect(original.copyWith(updatedAt: null).updatedAt, isNull);
+    });
+
+    test('copyWith substitui o updatedAt pelo valor do servidor', () {
+      final antes = DateTime.utc(2026, 8, 18, 14, 37);
+      final depois = DateTime.utc(2026, 8, 18, 15, 02);
+      final original = _siteBase().copyWith(updatedAt: antes);
+
+      expect(original.copyWith(updatedAt: depois).updatedAt, depois);
+    });
   });
 
   // ─── Validação das opções dos dropdowns ──────────────────────────────────────

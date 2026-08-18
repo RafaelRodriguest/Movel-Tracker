@@ -40,9 +40,13 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
   }
 
   // Atualiza estado local + provider atomicamente
-  void _syncUrls(List<String?> urls) {
+  void _syncUrls(List<String?> urls, {DateTime? updatedAt}) {
     setState(() => _imageUrls = urls);
-    context.read<SiteProvider>().updateSiteImageUrls(widget.site.siteId, urls);
+    context.read<SiteProvider>().updateSiteImageUrls(
+      widget.site.siteId,
+      urls,
+      updatedAt: updatedAt,
+    );
   }
 
   Future<void> _pickAndUpload(int index, {required bool fromCamera}) async {
@@ -60,7 +64,8 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
       final oldUrl = _imageUrls[index];
       final isNew = oldUrl == null;
       uploadedUrl = await _cloudinaryService.upload(File(picked.path));
-      await _supabaseService.updateFoto(widget.site.siteId, index, uploadedUrl);
+      final updatedAt =
+          await _supabaseService.updateFoto(widget.site.siteId, index, uploadedUrl);
       await _supabaseService.insertAuditLog(
         siteId: widget.site.siteId,
         action: isNew ? 'foto_add' : 'foto_update',
@@ -68,7 +73,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
       );
       final updated = List<String?>.from(_imageUrls);
       updated[index] = uploadedUrl;
-      if (mounted) _syncUrls(updated);
+      if (mounted) _syncUrls(updated, updatedAt: updatedAt);
       // Limpeza do Cloudinary em background — não bloqueia a UI
       if (!isNew) {
         final publicId = CloudinaryService.extractPublicId(oldUrl);
@@ -113,7 +118,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
     setState(() => _loadingSlots[index] = true);
     try {
       final urlToDelete = _imageUrls[index];
-      await _supabaseService.deleteFoto(widget.site.siteId, index);
+      final updatedAt = await _supabaseService.deleteFoto(widget.site.siteId, index);
       await _supabaseService.insertAuditLog(
         siteId: widget.site.siteId,
         action: 'foto_delete',
@@ -121,7 +126,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
       );
       final updated = List<String?>.from(_imageUrls);
       updated[index] = null;
-      if (mounted) _syncUrls(updated);
+      if (mounted) _syncUrls(updated, updatedAt: updatedAt);
       // Limpeza do Cloudinary em background — não bloqueia a UI
       final publicId = CloudinaryService.extractPublicId(urlToDelete);
       if (publicId != null) {
@@ -628,9 +633,32 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
         ),
         const SizedBox(height: 12),
 
+        _buildUltimaAtualizacaoCard(context),
+        const SizedBox(height: 12),
+
         _buildOperacionalCard(context),
       ],
     );
+  }
+
+  Widget _buildUltimaAtualizacaoCard(BuildContext context) {
+    // Lê do provider (não de widget.site) para refletir edições sem sair da tela
+    final site = context.watch<SiteProvider>().allSites.firstWhere(
+          (s) => s.siteId == widget.site.siteId,
+          orElse: () => _currentSite,
+        );
+    final updatedAt = site.updatedAt;
+    return _buildInfoCard(
+      icon: Icons.update,
+      label: 'Última atualização',
+      value: updatedAt == null ? '—' : _formatDataHora(updatedAt),
+    );
+  }
+
+  String _formatDataHora(DateTime utc) {
+    final d = utc.toLocal();
+    String dois(int n) => n.toString().padLeft(2, '0');
+    return '${dois(d.day)}/${dois(d.month)}/${d.year} às ${dois(d.hour)}:${dois(d.minute)}';
   }
 
   Widget _buildOperacionalCard(BuildContext context) {
