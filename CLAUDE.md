@@ -224,7 +224,6 @@ Ao adicionar novos campos nullable a `Site`, use `Object? campo = _omit` no `cop
 
 ## 📂 Avisos Importantes
 
-- **`app/android/lib/`** — cópia redundante de `app/lib/`, ignorar. Trabalhe sempre em `app/lib/`.
 - **`data_service.dart`** — código legado do Google Sheets. A fonte ativa é o Supabase via `supabase_service.dart`.
 - **Deep link** de reset de senha: `com.claro.moveltracker://login-callback/`
 - **`SiteProvider.getSiteById`** delega ao `SiteRepository`, que não reflete atualizações feitas via `updateSiteFields`. Para buscar o estado vivo de um site, use `provider.allSites.firstWhere((s) => s.siteId == id)`.
