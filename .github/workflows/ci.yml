@@ -29,6 +29,7 @@ jobs:
           ENV_DART_CONTENT: ${{ secrets.ENV_DART_CONTENT }}
           ENV_DEV_DART_CONTENT: ${{ secrets.ENV_DEV_DART_CONTENT }}
         run: |
+          mkdir -p lib/config
           printf '%s' "$ENV_DART_CONTENT" > lib/config/env.dart
           printf '%s' "$ENV_DEV_DART_CONTENT" > lib/config/env_dev.dart
 
