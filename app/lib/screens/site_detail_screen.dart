@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -339,12 +340,6 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.share),
-                    onPressed: () {},
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
                 ],
               ),
             ),
@@ -567,6 +562,13 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
     );
   }
 
+  void _copiarValor(String label, String valor) {
+    Clipboard.setData(ClipboardData(text: valor));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$label copiado')),
+    );
+  }
+
   Widget _buildInfoCards(BuildContext context) {
     return Column(
       children: [
@@ -575,7 +577,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
           icon: Icons.map_outlined,
           label: 'Endereço',
           value: widget.site.endereco,
-          onTap: () {},
+          onTap: () => _copiarValor('Endereço', widget.site.endereco),
         ),
         const SizedBox(height: 12),
 
@@ -583,7 +585,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
           icon: Icons.person_outline,
           label: 'Técnico',
           value: widget.site.tecnico,
-          onTap: () {},
+          onTap: () => _copiarValor('Técnico', widget.site.tecnico),
         ),
         const SizedBox(height: 12),
 
@@ -627,6 +629,7 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
                 label: 'UC',
                 value: widget.site.uc,
                 isCompact: true,
+                onTap: () => _copiarValor('UC', widget.site.uc),
               ),
             ),
           ],
