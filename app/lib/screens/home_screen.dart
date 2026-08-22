@@ -234,13 +234,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Sites encontrados (${provider.siteCount})',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textSecondary,
-                        letterSpacing: 0.5,
+                    Flexible(
+                      child: Text(
+                        'Sites encontrados (${provider.siteCount})',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textSecondary,
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ),
                     Icon(Icons.sort, color: AppColors.textSecondary, size: 20),
@@ -350,6 +354,8 @@ class _SiteCard extends StatelessWidget {
                         // Nome do site
                         Text(
                           site.nome,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -366,13 +372,17 @@ class _SiteCard extends StatelessWidget {
                               color: AppColors.textSecondary,
                             ),
                             const SizedBox(width: 4),
-                            Text(
-                              site.uf.isEmpty
-                                  ? site.municipio
-                                  : '${site.municipio}, ${site.uf}',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.textSecondary,
+                            Expanded(
+                              child: Text(
+                                site.uf.isEmpty
+                                    ? site.municipio
+                                    : '${site.municipio}, ${site.uf}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.textSecondary,
+                                ),
                               ),
                             ),
                           ],
@@ -388,11 +398,15 @@ class _SiteCard extends StatelessWidget {
                               color: AppColors.textSecondary,
                             ),
                             const SizedBox(width: 4),
-                            Text(
-                              'UC: ${site.uc}',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textSecondary,
+                            Expanded(
+                              child: Text(
+                                'UC: ${site.uc}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
+                                ),
                               ),
                             ),
                           ],
@@ -408,11 +422,15 @@ class _SiteCard extends StatelessWidget {
                               color: AppColors.textSecondary,
                             ),
                             const SizedBox(width: 4),
-                            Text(
-                              site.tecnico,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textSecondary,
+                            Expanded(
+                              child: Text(
+                                site.tecnico,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
+                                ),
                               ),
                             ),
                           ],
