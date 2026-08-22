@@ -105,7 +105,10 @@ class StateSelectionScreen extends StatelessWidget {
                 ),
                 const PopupMenuDivider(),
                 PopupMenuItem(
-                  onTap: () => context.read<AuthProvider>().signOut(),
+                  onTap: () {
+                    Navigator.of(context).popUntil((r) => r.isFirst);
+                    context.read<AuthProvider>().signOut();
+                  },
                   child: const Row(
                     children: [
                       Icon(Icons.logout, color: Colors.red, size: 18),

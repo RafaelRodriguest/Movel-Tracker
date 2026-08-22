@@ -182,7 +182,12 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> signOut() async {
-    await _client.auth.signOut();
+    try {
+      await _client.auth.signOut();
+    } catch (_) {
+      // Sessão local é limpa mesmo se a chamada de rede falhar (ex: sem
+      // internet) — não deve travar o usuário na tela atual.
+    }
     _profile = null;
     _session = null;
     _error = null;
