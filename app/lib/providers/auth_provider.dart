@@ -73,8 +73,8 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> _handleUri(Uri uri) async {
     final fragmentParams = Uri.splitQueryString(uri.fragment);
-    final isRecovery = uri.queryParameters['type'] == 'recovery' ||
-        fragmentParams['type'] == 'recovery';
+    final type = uri.queryParameters['type'] ?? fragmentParams['type'];
+    final isRecovery = type == 'recovery' || type == 'invite';
 
     if (!isRecovery) return;
 
