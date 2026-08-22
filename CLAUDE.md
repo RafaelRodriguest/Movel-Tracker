@@ -169,8 +169,12 @@ flutter pub get          # Instalar dependências
 flutter run              # Rodar no dispositivo/emulador
 flutter analyze          # Análise estática
 flutter test             # Todos os testes
-flutter test test/site_test.dart        # Testa Site.fromJson/toJson/ativo
-flutter test test/operacional_test.dart # Testa campos operacionais e sentinel copyWith
+flutter test test/site_test.dart               # Testa Site.fromJson/toJson/ativo
+flutter test test/operacional_test.dart        # Testa campos operacionais e sentinel copyWith
+flutter test test/site_provider_test.dart      # Testa filtros e estado de SiteProvider
+flutter test test/site_repository_test.dart    # Testa carga do Supabase + fallback mock
+flutter test test/cloudinary_service_test.dart # Testa upload para Cloudinary
+flutter test test/cache_service_test.dart      # Testa cache local de sites
 flutter build apk --debug    # APK de debug
 flutter build apk --release  # APK de produção
 flutter pub run flutter_launcher_icons  # Regenerar ícone do app
@@ -195,6 +199,11 @@ Isso mantém `supabase/migrations/` como fonte da verdade do schema — sem isso
 **Carga de dados em massa** (ex.: importação de CSV de sites novos) é diferente de mudança de schema — pode continuar sendo feita via SQL Editor ou script, já que não é algo que faz sentido versionar como migration. Mas documente o que foi feito (memória do projeto ou commit) para rastreabilidade.
 
 Para checar se o schema de produção bateu com o último migration versionado: `supabase db dump --linked --schema public -f /tmp/schema_atual.sql` e comparar com o arquivo de migration mais recente.
+
+## Documentação Adicional
+
+- **`DADOS.md`** — onde os dados dos sites ficam armazenados, como o app os busca e como são cacheados no dispositivo.
+- **`SKILS.md/`** — notas específicas por tópico: `authentication.md`, `upload-image.md`, `key-sources-consumption.md`, `supabase-migration.md`, `multi-estado-expansion.md`, `import-csv-multi-estado.md`.
 
 ## Padrões de Código
 
