@@ -85,7 +85,7 @@ void main() {
 
     test('loadSites retorna null quando há dados mas sem timestamp', () async {
       SharedPreferences.setMockInitialValues({
-        'sites_cache_MA_v2': '[{"site_id":"SLZ001"}]',
+        'sites_cache_prod_MA_v3': '[{"site_id":"SLZ001"}]',
         // timestamp ausente intencionalmente
       });
       final cache = CacheService();
@@ -115,7 +115,7 @@ void main() {
       await cache.saveSites(_uf, [_siteMinimo()]);
       // Sobrescreve o timestamp para simular cache com 29 min de idade
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('sites_cache_ts_MA_v2', tsValido);
+      await prefs.setInt('sites_cache_ts_prod_MA_v3', tsValido);
 
       expect(await cache.loadSites(_uf), isNotNull);
     });
@@ -127,7 +127,7 @@ void main() {
       final cache = CacheService();
       await cache.saveSites(_uf, [_siteMinimo()]);
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('sites_cache_ts_MA_v2', tsExpirado);
+      await prefs.setInt('sites_cache_ts_prod_MA_v3', tsExpirado);
 
       expect(await cache.loadSites(_uf), isNull);
     });
@@ -139,7 +139,7 @@ void main() {
       final cache = CacheService();
       await cache.saveSites(_uf, [_siteCompleto()]);
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('sites_cache_ts_MA_v2', tsExpirado);
+      await prefs.setInt('sites_cache_ts_prod_MA_v3', tsExpirado);
 
       expect(await cache.loadSites(_uf), isNull);
     });
@@ -312,7 +312,7 @@ void main() {
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(
-        'sites_cache_ts_MA_v2',
+        'sites_cache_ts_prod_MA_v3',
         DateTime.now().subtract(const Duration(hours: 2)).millisecondsSinceEpoch,
       );
 
@@ -361,8 +361,8 @@ void main() {
     test('JSON inválido retorna null e não lança exceção', () async {
       final ts = DateTime.now().millisecondsSinceEpoch;
       SharedPreferences.setMockInitialValues({
-        'sites_cache_MA_v2': 'json_invalido_{{{',
-        'sites_cache_ts_MA_v2': ts,
+        'sites_cache_prod_MA_v3': 'json_invalido_{{{',
+        'sites_cache_ts_prod_MA_v3': ts,
       });
       final cache = CacheService();
       expect(await cache.loadSites(_uf), isNull);
@@ -371,8 +371,8 @@ void main() {
     test('JSON corrompido limpa o cache automaticamente', () async {
       final ts = DateTime.now().millisecondsSinceEpoch;
       SharedPreferences.setMockInitialValues({
-        'sites_cache_MA_v2': 'corrompido',
-        'sites_cache_ts_MA_v2': ts,
+        'sites_cache_prod_MA_v3': 'corrompido',
+        'sites_cache_ts_prod_MA_v3': ts,
       });
       final cache = CacheService();
       await cache.loadSites(_uf); // dispara limpeza interna
@@ -384,8 +384,8 @@ void main() {
     test('array com objeto malformado retorna null', () async {
       final ts = DateTime.now().millisecondsSinceEpoch;
       SharedPreferences.setMockInitialValues({
-        'sites_cache_MA_v2': '[{"campo_inexistente": true}]',
-        'sites_cache_ts_MA_v2': ts,
+        'sites_cache_prod_MA_v3': '[{"campo_inexistente": true}]',
+        'sites_cache_ts_prod_MA_v3': ts,
       });
       final cache = CacheService();
       // fromJson com campos obrigatórios ausentes não deve travar o app

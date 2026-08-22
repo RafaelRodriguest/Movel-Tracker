@@ -143,7 +143,8 @@ class _SiteOperacionalScreenState extends State<SiteOperacionalScreen> {
         context.read<SiteProvider>().updateSiteFields(widget.site.siteId, updatedSite);
         Navigator.pop(context, updatedSite);
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('DEBUG save error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Erro ao salvar. Verifique a conexão.')),
