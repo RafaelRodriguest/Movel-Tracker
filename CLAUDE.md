@@ -176,9 +176,19 @@ flutter test test/site_repository_test.dart    # Testa carga do Supabase + fallb
 flutter test test/cloudinary_service_test.dart # Testa upload para Cloudinary
 flutter test test/cache_service_test.dart      # Testa cache local de sites
 flutter build apk --debug    # APK de debug
-flutter build apk --release  # APK de produção
+flutter build apk --release --obfuscate --split-debug-info=build/debug-info/  # APK de produção (ofuscado)
 flutter pub run flutter_launcher_icons  # Regenerar ícone do app
 ```
+
+### 🔒 Build de release ofuscado
+
+Todo build de release (`--release`) deve incluir `--obfuscate --split-debug-info=build/debug-info/` — sem isso, nomes de classes/métodos Dart ficam legíveis em `libapp.so` via engenharia reversa do APK. `build/debug-info/` é gerado localmente e não deve ser commitado (já coberto por `build/` no `.gitignore`) — guarde-o fora do repo (ex. artefato de CI) para poder desofuscar stack traces de crash depois:
+
+```bash
+flutter symbolize -i crash_report.txt -d build/debug-info/
+```
+
+O build de release é assinado com `android/key.properties` + `android/app/movel-tracker-release.jks` (ambos git-ignorados, nunca commitados). Sem esses arquivos localmente, o Gradle cai de volta para a keystore de debug — confira que `android/key.properties` existe antes de gerar um APK para distribuição.
 
 ## 🤖 CI
 

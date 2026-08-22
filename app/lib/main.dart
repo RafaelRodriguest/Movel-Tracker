@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config/env.dart';
 import 'services/cache_service.dart';
+import 'services/secure_session_storage.dart';
 import 'theme/app_colors.dart';
 import 'providers/auth_provider.dart';
 import 'providers/site_provider.dart';
@@ -18,6 +19,7 @@ void main() async {
     anonKey: Env.supabaseAnonKey,
     authOptions: const FlutterAuthClientOptions(
       authFlowType: AuthFlowType.implicit,
+      localStorage: SecureSessionStorage(),
     ),
   );
   runApp(const ClaroSitesApp());
