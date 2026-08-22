@@ -385,14 +385,14 @@ class _SiteCard extends StatelessWidget {
                             Icon(
                               Icons.receipt,
                               size: 14,
-                              color: AppColors.textSecondary.withOpacity(0.7),
+                              color: AppColors.textSecondary,
                             ),
                             const SizedBox(width: 4),
                             Text(
                               'UC: ${site.uc}',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: AppColors.textSecondary.withOpacity(0.7),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
                               ),
                             ),
                           ],
@@ -405,14 +405,14 @@ class _SiteCard extends StatelessWidget {
                             Icon(
                               Icons.person_outline,
                               size: 14,
-                              color: AppColors.textSecondary.withOpacity(0.7),
+                              color: AppColors.textSecondary,
                             ),
                             const SizedBox(width: 4),
                             Text(
                               site.tecnico,
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: AppColors.textSecondary.withOpacity(0.7),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
                               ),
                             ),
                           ],
