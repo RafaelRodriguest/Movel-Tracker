@@ -29,21 +29,27 @@ class SupabaseService {
     ];
   }
 
-  Future<void> updateFoto(String siteId, int index, String url) async {
-    await _client
+  Future<DateTime?> updateFoto(String siteId, int index, String url) async {
+    final row = await _client
         .from('sites')
         .update({'foto_${index + 1}': url})
-        .eq('site_id', siteId);
+        .eq('site_id', siteId)
+        .select('updated_at')
+        .single();
+    return _parseUpdatedAt(row);
   }
 
-  Future<void> deleteFoto(String siteId, int index) async {
-    await _client
+  Future<DateTime?> deleteFoto(String siteId, int index) async {
+    final row = await _client
         .from('sites')
         .update({'foto_${index + 1}': null})
-        .eq('site_id', siteId);
+        .eq('site_id', siteId)
+        .select('updated_at')
+        .single();
+    return _parseUpdatedAt(row);
   }
 
-  Future<void> updateInformacoesOperacionais(
+  Future<DateTime?> updateInformacoesOperacionais(
     String siteId, {
     String? chavePortao,
     String? chaveGradil01,
@@ -55,7 +61,7 @@ class SupabaseService {
     String? bateriasFonte01,
     String? bateriasFonte02,
   }) async {
-    await _client.from('sites').update({
+    final row = await _client.from('sites').update({
       'chave_portao': chavePortao,
       'chave_gradil_01': chaveGradil01,
       'chave_gradil_02': chaveGradil02,
@@ -65,14 +71,20 @@ class SupabaseService {
       'consumo_fonte_02': consumoFonte02,
       'baterias_fonte_01': bateriasFonte01,
       'baterias_fonte_02': bateriasFonte02,
-    }).eq('site_id', siteId);
+    }).eq('site_id', siteId).select('updated_at').single();
 
     await insertAuditLog(
       siteId: siteId,
       action: 'operacional_update',
       detail: 'chaves/fontes/consumo/baterias atualizados',
     );
+
+    return _parseUpdatedAt(row);
   }
+
+  /// Extrai o `updated_at` gravado pelo trigger no retorno do UPDATE.
+  static DateTime? _parseUpdatedAt(Map<String, dynamic> row) =>
+      DateTime.tryParse(row['updated_at']?.toString() ?? '');
 
   /// Chama a edge function para deletar a imagem do Cloudinary.
   /// Operação best-effort: falhas são silenciadas para não bloquear o fluxo principal.

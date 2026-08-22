@@ -9,9 +9,16 @@ List<Site> _parseSitesJson(String raw) {
 }
 
 class CacheService {
-  // v2: cache escopado por estado. O bump invalida o cache global v1 (sem `uf`).
-  static String _keyData(String uf) => 'sites_cache_${uf}_v2';
-  static String _keyTimestamp(String uf) => 'sites_cache_ts_${uf}_v2';
+  /// Tag do ambiente atual ('prod' ou 'dev'), setada em main()/main_dev.dart
+  /// antes do primeiro uso. Necessária porque os dois builds compartilham o
+  /// mesmo applicationId Android e, portanto, o mesmo SharedPreferences —
+  /// sem isso, o cache de um ambiente vaza para o outro.
+  static String envTag = 'prod';
+
+  // v3: cache escopado por ambiente + estado. O bump invalida o cache v2
+  // (sem tag de ambiente), que podia misturar dados de prod e dev.
+  static String _keyData(String uf) => 'sites_cache_${envTag}_${uf}_v3';
+  static String _keyTimestamp(String uf) => 'sites_cache_ts_${envTag}_${uf}_v3';
   static const _ttl = Duration(minutes: 30);
 
   /// Retorna lista de sites do estado a partir do cache, se existir e não

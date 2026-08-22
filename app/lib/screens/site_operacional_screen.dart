@@ -105,7 +105,7 @@ class _SiteOperacionalScreenState extends State<SiteOperacionalScreen> {
 
     setState(() => _isSaving = true);
     try {
-      await _supabaseService.updateInformacoesOperacionais(
+      final updatedAt = await _supabaseService.updateInformacoesOperacionais(
         widget.site.siteId,
         chavePortao: _chavePortao,
         chaveGradil01: _chaveGradil01,
@@ -136,13 +136,15 @@ class _SiteOperacionalScreenState extends State<SiteOperacionalScreen> {
             : _consumo02Controller.text.trim(),
         bateriasFonte01: _bateriasFonte01,
         bateriasFonte02: _bateriasFonte02,
+        updatedAt: updatedAt,
       );
 
       if (mounted) {
         context.read<SiteProvider>().updateSiteFields(widget.site.siteId, updatedSite);
         Navigator.pop(context, updatedSite);
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('DEBUG save error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Erro ao salvar. Verifique a conexão.')),

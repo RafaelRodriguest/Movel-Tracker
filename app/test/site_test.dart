@@ -97,4 +97,38 @@ void main() {
       expect(site.copyWith(fonte01: 'VERTIV').uf, 'RR');
     });
   });
+
+  group('Site.updatedAt', () {
+    Map<String, dynamic> base(Map<String, dynamic> extra) => {
+          'site_id': 'X', 'sigla': '', 'nome': '', 'endereco': '',
+          'municipio': '', 'tecnico': '', 'latitude': 0.0, 'longitude': 0.0,
+          'detentora': '', 'uc': '', 'status': 'Ativo',
+          ...extra,
+        };
+
+    test('linha sem updated_at vira null', () {
+      expect(Site.fromJson(base({})).updatedAt, isNull);
+    });
+
+    test('timestamptz do Supabase é parseado', () {
+      final site = Site.fromJson(
+        base({'updated_at': '2026-08-18T14:37:05.123456+00:00'}),
+      );
+      expect(site.updatedAt, isNotNull);
+      expect(site.updatedAt!.toUtc().hour, 14);
+      expect(site.updatedAt!.toUtc().minute, 37);
+    });
+
+    test('valor inválido vira null em vez de estourar', () {
+      expect(Site.fromJson(base({'updated_at': 'não é data'})).updatedAt, isNull);
+    });
+
+    test('sobrevive ao round-trip fromJson → toJson', () {
+      final original = Site.fromJson(
+        base({'updated_at': '2026-08-18T14:37:00.000Z'}),
+      );
+      final rebuilt = Site.fromJson(original.toJson());
+      expect(rebuilt.updatedAt, original.updatedAt);
+    });
+  });
 }

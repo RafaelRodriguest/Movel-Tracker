@@ -38,11 +38,11 @@ Site _site({
 Future<void> _semearCache(String uf, List<Site> sites) async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setString(
-    'sites_cache_${uf}_v2',
+    'sites_cache_prod_${uf}_v3',
     jsonEncode(sites.map((s) => s.toJson()).toList()),
   );
   await prefs.setInt(
-    'sites_cache_ts_${uf}_v2',
+    'sites_cache_ts_prod_${uf}_v3',
     DateTime.now().millisecondsSinceEpoch,
   );
 }
@@ -50,7 +50,7 @@ Future<void> _semearCache(String uf, List<Site> sites) async {
 Future<bool> _cacheExiste(String uf) async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.reload();
-  return prefs.getString('sites_cache_${uf}_v2') != null;
+  return prefs.getString('sites_cache_prod_${uf}_v3') != null;
 }
 
 /// Dá tempo para a invalidação de cache disparada em background (`.ignore()`).
@@ -162,7 +162,7 @@ void main() {
 
       // Cache apagado: se houvesse refetch, a lista viraria mock ou vazio
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('sites_cache_MA_v2');
+      await prefs.remove('sites_cache_prod_MA_v3');
 
       await provider.selectUf('MA');
 

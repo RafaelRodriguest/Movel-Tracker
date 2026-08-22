@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config/env.dart';
+import 'services/cache_service.dart';
 import 'theme/app_colors.dart';
 import 'providers/auth_provider.dart';
 import 'providers/site_provider.dart';
@@ -11,6 +12,7 @@ import 'screens/reset_password_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  CacheService.envTag = 'prod';
   await Supabase.initialize(
     url: Env.supabaseUrl,
     anonKey: Env.supabaseAnonKey,
