@@ -32,6 +32,42 @@ const _opcoesChavePorUf = <String, List<String>>{
     'MULTLOCK',
     'EBT TETRA',
   ],
+  'PA': [
+    'PA-GD',
+    'PA-GM',
+    'PA-PP',
+    'PA-GC1',
+    'PA-PP-V',
+    'PA-GDR',
+    'PA-GDL',
+    'PA-PC-V',
+    'PA-PC',
+    'PA-GDA',
+    'PA-CLIQ',
+    'PA-DO',
+    'CONT-A',
+  ],
+  'AP': [
+    'AP-GD',
+    'AP-GM',
+    'AP-GDA',
+    'AP-GDR',
+    'CONT-A',
+  ],
+  'AM': [
+    'AM-GM',
+    'AM-GDR',
+    'AM-PT',
+    'AM-CLIQ',
+    'AM-CONT',
+    'AM-STTE',
+  ],
+  'RR': [
+    'RR-GM',
+    'RR-GDB',
+    'RR-GDR',
+    'RR-CLIQ',
+  ],
 };
 
 /// Lista de chaves válidas para o estado do site.

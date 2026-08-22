@@ -13,6 +13,19 @@ const _opcoesChavePorUf = <String, List<String>>{
     'GD SLS V', 'GD CHI V', 'GD PHE V', 'GD BBL V', 'GD ITZ V',
     'MA PCN V', 'MULTLOCK', 'EBT TETRA',
   ],
+  'PA': [
+    'PA-GD', 'PA-GM', 'PA-PP', 'PA-GC1', 'PA-PP-V', 'PA-GDR',
+    'PA-GDL', 'PA-PC-V', 'PA-PC', 'PA-GDA', 'PA-CLIQ', 'PA-DO', 'CONT-A',
+  ],
+  'AP': [
+    'AP-GD', 'AP-GM', 'AP-GDA', 'AP-GDR', 'CONT-A',
+  ],
+  'AM': [
+    'AM-GM', 'AM-GDR', 'AM-PT', 'AM-CLIQ', 'AM-CONT', 'AM-STTE',
+  ],
+  'RR': [
+    'RR-GM', 'RR-GDB', 'RR-GDR', 'RR-CLIQ',
+  ],
 };
 
 List<String> _opcoesChaveDe(String uf) =>
@@ -310,11 +323,16 @@ void main() {
       expect(_opcoesChave.length, 13);
     });
 
-    test('estados sem lista própria caem na base compartilhada', () {
+    test('PA, AM, RR e AP têm lista própria (não caem na base compartilhada)',
+        () {
       for (final uf in ['PA', 'AM', 'RR', 'AP']) {
-        expect(_opcoesChaveDe(uf), _opcoesChaveBase,
-            reason: '$uf ainda não tem chaves cadastradas');
+        expect(_opcoesChaveDe(uf), _opcoesChavePorUf[uf],
+            reason: '$uf deveria usar sua própria lista de chaves');
       }
+    });
+
+    test('estado desconhecido cai na base compartilhada', () {
+      expect(_opcoesChaveDe('XX'), _opcoesChaveBase);
     });
 
     test('base compartilhada está contida na lista do MA', () {
