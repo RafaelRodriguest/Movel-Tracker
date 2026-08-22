@@ -49,7 +49,7 @@ class AuthProvider with ChangeNotifier {
         _profile = null;
       }
       notifyListeners();
-    });
+    }, onError: (_) {});
 
   }
 
@@ -59,7 +59,9 @@ class AuthProvider with ChangeNotifier {
     final initialUri = await appLinks.getInitialLink();
     if (initialUri != null) await _handleUri(initialUri);
 
-    _deepLinkSub = appLinks.uriLinkStream.listen(_handleUri);
+    _deepLinkSub = appLinks.uriLinkStream.listen(
+      (uri) => _handleUri(uri).catchError((_) {}),
+    );
 
     _isInitializing = false;
     notifyListeners();
@@ -74,13 +76,25 @@ class AuthProvider with ChangeNotifier {
   Future<void> _handleUri(Uri uri) async {
     final fragmentParams = Uri.splitQueryString(uri.fragment);
     final type = uri.queryParameters['type'] ?? fragmentParams['type'];
+    final errorDescription = uri.queryParameters['error_description'] ??
+        fragmentParams['error_description'];
     final isRecovery = type == 'recovery' || type == 'invite';
 
-    if (!isRecovery) return;
+    if (!isRecovery) {
+      if (errorDescription != null) {
+        _error = 'Link expirado ou já utilizado. Solicite um novo.';
+        notifyListeners();
+      }
+      return;
+    }
 
     try {
       await _client.auth.getSessionFromUrl(uri);
-    } catch (_) {}
+    } catch (_) {
+      _error = 'Link expirado ou já utilizado. Solicite um novo.';
+      notifyListeners();
+      return;
+    }
 
     if (_client.auth.currentSession != null) {
       _session = _client.auth.currentSession;
