@@ -407,16 +407,19 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      Text(
-                                        widget.site.ativo
-                                            ? 'Site Operacional'
-                                            : 'Site Inativo',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w500,
-                                          color: widget.site.ativo
-                                              ? AppColors.success
-                                              : AppColors.error,
+                                      Flexible(
+                                        child: Text(
+                                          widget.site.ativo
+                                              ? 'Site Operacional'
+                                              : 'Site Inativo',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                            color: widget.site.ativo
+                                                ? AppColors.success
+                                                : AppColors.error,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                     ],
