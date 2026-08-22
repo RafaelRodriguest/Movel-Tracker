@@ -21,6 +21,7 @@ Aplicativo Android "Movel Tracker" para técnicos de campo da Claro no Maranhão
   - `cached_network_image: ^3.4.1` — cache de imagens
   - `url_launcher: ^6.3.0` — Google Maps
   - `flutter_map: ^8.0.0` — mapa OpenStreetMap
+  - `flutter_secure_storage: ^9.2.2` / `shared_preferences: ^2.3.0` — sessão segura e cache local
   - `http: ^1.2.2` / `csv: ^6.0.0` — legado Google Sheets (ainda presente mas não é a fonte primária)
 
 ## 🏗️ Arquitetura
@@ -193,6 +194,8 @@ O build de release é assinado com `android/key.properties` + `android/app/movel
 ## 🤖 CI
 
 `.github/workflows/ci.yml` roda `flutter analyze` e `flutter test` a cada push/PR para `main`. Objetivo: pegar erro de análise estática ou teste quebrado antes do merge — não existe branch protection habilitada no GitHub (plano free + repo privado), então o CI é só sinal visual (checagem verde/vermelha no PR/commit), não bloqueio automático. Antes de dar merge numa branch, confira se o CI passou.
+
+`.github/workflows/keep-supabase-alive.yml` faz ping periódico nos projetos Supabase (prod e dev) para evitar a pausa automática por 7 dias sem uso do free tier.
 
 ## 🗄️ Migrations do Supabase
 
