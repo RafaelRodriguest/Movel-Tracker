@@ -325,7 +325,7 @@ class _SiteCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Site ID e Sigla
+                        // Detentora
                         Row(
                           children: [
                             Container(
@@ -335,7 +335,7 @@ class _SiteCard extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                '${site.siteId} | ${site.sigla}',
+                                site.detentora,
                                 style: const TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
