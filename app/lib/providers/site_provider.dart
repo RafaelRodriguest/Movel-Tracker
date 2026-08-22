@@ -19,6 +19,21 @@ const _accents = <String, String>{
   'Ý': 'Y', 'ý': 'y', 'ÿ': 'y',
 };
 
+/// Campos de busca de um site já normalizados (sem acento, minúsculo).
+/// Calculado uma vez por site ao carregar/editar — não a cada tecla digitada,
+/// já que os mesmos 5 campos eram renormalizados do zero em toda busca.
+class _SearchIndex {
+  final String siteId, sigla, nome, municipio, tecnico;
+  const _SearchIndex(this.siteId, this.sigla, this.nome, this.municipio, this.tecnico);
+
+  bool matches(String normalizedQuery) =>
+      siteId.contains(normalizedQuery) ||
+      sigla.contains(normalizedQuery) ||
+      nome.contains(normalizedQuery) ||
+      municipio.contains(normalizedQuery) ||
+      tecnico.contains(normalizedQuery);
+}
+
 /// Provider para gerenciar o estado dos Sites
 /// Gerencia lista de sites, busca e filtros
 class SiteProvider with ChangeNotifier {
@@ -26,6 +41,7 @@ class SiteProvider with ChangeNotifier {
 
   // Estado
   List<Site> _allSites = [];
+  List<_SearchIndex> _searchIndex = [];
   List<Site> _filteredSites = [];
   String _searchQuery = '';
   String _selectedMunicipio = 'Todos';
@@ -92,9 +108,22 @@ class SiteProvider with ChangeNotifier {
       _allSites = _repository.loadMockData(uf);
     }
 
+    _rebuildSearchIndex();
     _filteredSites = List.from(_allSites);
     _isLoading = false;
     notifyListeners();
+  }
+
+  _SearchIndex _buildIndexEntry(Site s) => _SearchIndex(
+        _normalizeText(s.siteId),
+        _normalizeText(s.sigla),
+        _normalizeText(s.nome),
+        _normalizeText(s.municipio),
+        _normalizeText(s.tecnico),
+      );
+
+  void _rebuildSearchIndex() {
+    _searchIndex = _allSites.map(_buildIndexEntry).toList();
   }
 
   /// Atualiza a busca com o texto informado
@@ -127,27 +156,18 @@ class SiteProvider with ChangeNotifier {
     return result.toLowerCase().trim();
   }
 
-  /// Aplica filtros de busca e município
+  /// Aplica filtros de busca e município.
+  /// Usa _searchIndex (já normalizado) em vez de renormalizar os campos do
+  /// site a cada chamada — este método roda a cada tecla digitada na busca.
   void _applyFilters() {
-    List<Site> result = _allSites;
-
-    // Filtro por município — usa _allSites para refletir estado mais recente (ex: fotos atualizadas)
-    if (_selectedMunicipio != 'Todos') {
-      result = _allSites.where((s) => s.municipio == _selectedMunicipio).toList();
+    final normalizedQuery = _searchQuery.isEmpty ? null : _normalizeText(_searchQuery);
+    final result = <Site>[];
+    for (var i = 0; i < _allSites.length; i++) {
+      final site = _allSites[i];
+      if (_selectedMunicipio != 'Todos' && site.municipio != _selectedMunicipio) continue;
+      if (normalizedQuery != null && !_searchIndex[i].matches(normalizedQuery)) continue;
+      result.add(site);
     }
-
-    // Filtro por busca de texto (case-insensitive e acent-insensitive)
-    if (_searchQuery.isNotEmpty) {
-      final normalizedQuery = _normalizeText(_searchQuery);
-      result = result.where((site) {
-        return _normalizeText(site.siteId).contains(normalizedQuery) ||
-               _normalizeText(site.sigla).contains(normalizedQuery) ||
-               _normalizeText(site.nome).contains(normalizedQuery) ||
-               _normalizeText(site.municipio).contains(normalizedQuery) ||
-               _normalizeText(site.tecnico).contains(normalizedQuery);
-      }).toList();
-    }
-
     _filteredSites = result;
   }
 
@@ -163,6 +183,7 @@ class SiteProvider with ChangeNotifier {
       imageUrls: urls,
       updatedAt: updatedAt ?? _allSites[index].updatedAt,
     );
+    _searchIndex[index] = _buildIndexEntry(_allSites[index]);
     _applyFilters();
     notifyListeners();
     // Invalida cache em background — próximo cold start buscará dados frescos
@@ -175,6 +196,7 @@ class SiteProvider with ChangeNotifier {
     final index = _allSites.indexWhere((s) => s.siteId == siteId);
     if (index == -1) return;
     _allSites[index] = updatedSite;
+    _searchIndex[index] = _buildIndexEntry(updatedSite);
     _applyFilters();
     notifyListeners();
     // Invalida cache em background — próximo cold start buscará dados frescos
