@@ -190,9 +190,36 @@ O Supabase não filtra domínio nativamente. A validação ocorre no app antes
 de chamar `signIn`. O admin também deve cadastrar apenas e-mails autorizados.
 
 ### Cadastro de usuários
-Admin cadastra via **Supabase Dashboard → Authentication → Users → Add user**.
-O Supabase dispara o e-mail de convite. Após isso, o admin atualiza a tabela
-`profiles` com `login`, `nome` e `role`.
+
+Fluxo padrão pra cada novo técnico, sempre pelo Supabase Dashboard (nunca pelo app):
+
+1. **Criar o usuário no Auth** — Dashboard → Authentication → Users → **Add user**.
+   E-mail precisa ser `@claro.com.br` ou `@stte.com.br` (domínio fora disso é
+   barrado no login, mesmo que o convite complete a redefinição de senha
+   normalmente). Isso dispara o e-mail automático de convite. Copiar o **UID**
+   gerado.
+2. **Criar o perfil na tabela `profiles`**, via SQL Editor:
+   ```sql
+   insert into profiles (id, login, nome, email, role)
+   values (
+     '<uid-do-passo-1>',
+     '<numero-de-login-do-tecnico>',
+     '<nome>',
+     '<email>',
+     'cell_owner'   -- ou 'geral' pro perfil somente-leitura
+   );
+   ```
+   `login` é o número que o técnico digita pra entrar no app — não é o e-mail.
+3. **Avisar o técnico** — ele recebe o e-mail, define a senha pelo link, e
+   loga no app com **número de login + senha**.
+
+Dados necessários antes de começar: nome, e-mail corporativo, número de login,
+e o perfil (`cell_owner` edita fotos/dados operacionais, `geral` só visualiza).
+
+**Link de convite expirado/já usado:** Dashboard → Authentication → Users →
+localizar o usuário → menu **⋮** → **Send password recovery**. Gera um novo
+link — o app trata `type=recovery` e `type=invite` pelo mesmo fluxo de
+definir senha, então o recovery resolve sem precisar recriar o usuário.
 
 ### Auditoria
 Toda chamada a `updateFoto()` e `deleteFoto()` deve chamar `insertAuditLog()`
