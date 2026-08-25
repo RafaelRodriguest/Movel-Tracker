@@ -14,6 +14,7 @@ class AuthProvider with ChangeNotifier {
   bool _isPasswordRecovery = false;
   bool _isInitializing = true;
   StreamSubscription<Uri>? _deepLinkSub;
+  Uri? _lastHandledUri;
 
   bool get isLoggedIn => _session != null;
   UserProfile? get profile => _profile;
@@ -74,6 +75,12 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> _handleUri(Uri uri) async {
+    // No cold start, o app_links entrega o mesmo link via getInitialLink()
+    // e via uriLinkStream — o token de recovery é single-use, então a
+    // segunda entrega falharia e sobrescreveria o sucesso com "expirado".
+    if (uri == _lastHandledUri) return;
+    _lastHandledUri = uri;
+
     final fragmentParams = Uri.splitQueryString(uri.fragment);
     final type = uri.queryParameters['type'] ?? fragmentParams['type'];
     final errorDescription = uri.queryParameters['error_description'] ??

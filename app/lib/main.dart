@@ -108,12 +108,26 @@ class ClaroSitesApp extends StatelessWidget {
   }
 }
 
-class _AppEntry extends StatelessWidget {
+class _AppEntry extends StatefulWidget {
   const _AppEntry();
 
   @override
+  State<_AppEntry> createState() => _AppEntryState();
+}
+
+class _AppEntryState extends State<_AppEntry> {
+  @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    if (auth.isPasswordRecovery) {
+      // Se o técnico abrir o link de redefinição estando logado e com telas
+      // empurradas por cima da raiz (Home, detalhe do site...), essa troca de
+      // conteúdo da rota raiz fica invisível até fechar a pilha até o topo.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context, rootNavigator: true)
+            .popUntil((route) => route.isFirst);
+      });
+    }
     if (auth.isInitializing) return const _SplashScreen();
     if (auth.isPasswordRecovery) return const ResetPasswordScreen();
     if (auth.isLoggedIn) return const StateSelectionScreen();
