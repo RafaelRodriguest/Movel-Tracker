@@ -97,7 +97,9 @@ class SiteProvider with ChangeNotifier {
       // Tenta carregar do cache/Supabase
       final sites = await _repository.loadFromSupabase(uf);
 
-      if (sites != null && sites.isNotEmpty) {
+      // null = busca falhou (cache e Supabase indisponíveis); lista vazia é
+      // um resultado válido (estado sem sites cadastrados ainda).
+      if (sites != null) {
         _allSites = sites;
       } else {
         // Fallback para dados mock locais do estado
