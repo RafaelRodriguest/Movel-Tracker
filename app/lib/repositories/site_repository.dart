@@ -123,14 +123,13 @@ class SiteRepository {
     }
     // 2. Cache miss: busca no Supabase e persiste para próxima abertura
     try {
+      // Lista vazia é um resultado válido (estado sem sites cadastrados ainda)
+      // — só null significa "a busca falhou", nunca "não achei nada".
       final sites = await _supabaseService.fetchSites(uf: uf);
-      if (sites.isNotEmpty) {
-        _sites.clear();
-        _sites.addAll(sites);
-        await _cache.saveSites(uf, sites);
-        return sites;
-      }
-      return null;
+      _sites.clear();
+      _sites.addAll(sites);
+      await _cache.saveSites(uf, sites);
+      return sites;
     } catch (e) {
       return null;
     }

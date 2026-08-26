@@ -83,6 +83,14 @@ class _SiteDetailScreenState extends State<SiteDetailScreen> {
         }
       }
     } catch (e) {
+      // Upload no Cloudinary funcionou mas o save no Supabase falhou depois —
+      // limpa a imagem órfã em vez de deixá-la vazando no Cloudinary.
+      if (uploadedUrl != null) {
+        final publicId = CloudinaryService.extractPublicId(uploadedUrl);
+        if (publicId != null) {
+          _supabaseService.deleteCloudinaryImage(publicId).ignore();
+        }
+      }
       if (mounted) {
         final msg = uploadedUrl != null
             ? 'Foto enviada mas não foi possível salvar. Tente novamente.'
