@@ -1,13 +1,13 @@
 name: Keep Supabase projects alive
 
 # Free tier do Supabase pausa projetos após 7 dias sem requisições.
-# Este workflow faz um SELECT trivial em produção e dev a cada 3 dias
+# Este workflow faz um SELECT trivial em produção e dev todo dia
 # só pra contar como atividade e evitar a pausa automática.
 # Ver CLAUDE.md, seção "Ambiente de desenvolvimento".
 
 on:
   schedule:
-    - cron: '23 6 */3 * *'
+    - cron: '23 6 * * *'
   workflow_dispatch:
 
 jobs:
