@@ -1,8 +1,9 @@
 name: Keep Supabase projects alive
 
 # Free tier do Supabase pausa projetos após 7 dias sem requisições.
-# Este workflow faz um SELECT trivial em produção e dev todo dia
-# só pra contar como atividade e evitar a pausa automática.
+# Este workflow faz um INSERT trivial em produção e dev todo dia
+# só pra contar como atividade e evitar a pausa automática. Um SELECT
+# não estava resetando o contador de inatividade de forma confiável.
 # Ver CLAUDE.md, seção "Ambiente de desenvolvimento".
 
 on:
@@ -16,14 +17,18 @@ jobs:
     steps:
       - name: Ping produção
         run: |
-          curl -sf "${{ secrets.SUPABASE_PROD_URL }}/rest/v1/sites?select=site_id&limit=1" \
+          curl -sf "${{ secrets.SUPABASE_PROD_URL }}/rest/v1/keepalive_ping" \
             -H "apikey: ${{ secrets.SUPABASE_PROD_ANON_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_PROD_ANON_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "{}" \
             -o /dev/null
 
       - name: Ping dev
         run: |
-          curl -sf "${{ secrets.SUPABASE_DEV_URL }}/rest/v1/sites?select=site_id&limit=1" \
+          curl -sf "${{ secrets.SUPABASE_DEV_URL }}/rest/v1/keepalive_ping" \
             -H "apikey: ${{ secrets.SUPABASE_DEV_ANON_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_DEV_ANON_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "{}" \
             -o /dev/null
